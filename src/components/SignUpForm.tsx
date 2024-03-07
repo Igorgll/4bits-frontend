@@ -40,6 +40,12 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ redirectToLogin }) => {
       console.error("Todos os campos obrigatórios devem ser preenchidos");
       return;
     }
+
+    if (password !== repeat_password) {
+      alert("As senhas não coincidem!");
+      return;
+    }
+
     try {
       const response = await fetch("http://localhost:8080/api/v1/users/signup", {
         method: "POST",
