@@ -1,6 +1,6 @@
 import Wrapper from "./Wrapper";
 
-export default function FrontGate(){
+export default function LoginForm(){
   return (
     <Wrapper className="bg-[#111827]">
     <div className="flex items-center">
