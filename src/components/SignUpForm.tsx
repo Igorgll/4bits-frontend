@@ -4,7 +4,7 @@ import Wrapper from "./Wrapper";
 interface FormData {
   name: string;
   email: string;
-  phone: string;
+  cpf: string;
   password: string;
   repeat_password: string;
   admin: boolean;
@@ -14,21 +14,22 @@ const SignUpForm: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
-    phone: "",
+    cpf: "",
     password: "",
     repeat_password: "",
     admin: true
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target;
+    console.log(`Valor de ${name}: ${value}`);
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    // Verificando se todos os campos obrigatórios foram preenchidos
-    const { name, email, phone, password, repeat_password } = formData;
-    if (!name || !email || !phone || !password || !repeat_password) {
+    const { name, email, cpf, password, repeat_password } = formData;
+    if (!name || !email || !cpf || !password || !repeat_password) {
       console.error("Todos os campos obrigatórios devem ser preenchidos");
       return;
     }
@@ -42,11 +43,10 @@ const SignUpForm: React.FC = () => {
       });
       if (response.ok) {
         console.log("Usuário cadastrado com sucesso");
-        // Resetar o formulário após o registro bem-sucedido, se necessário
         setFormData({
           name: "",
           email: "",
-          phone: "",
+          cpf: "",
           password: "",
           repeat_password: "",
           admin: true
@@ -99,15 +99,15 @@ const SignUpForm: React.FC = () => {
         <div className="relative z-0 w-full mb-5 group">
           <input
             type="tel"
-            name="phone"
-            value={formData.phone}
+            name="cpf"
+            value={formData.cpf}
             onChange={handleChange}
             className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
             placeholder=" "
             required
           />
           <label
-            htmlFor="phone"
+            htmlFor="cpf"
             className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
           >
             CPF
