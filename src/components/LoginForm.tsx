@@ -1,11 +1,16 @@
 import React, { useState } from "react";
 import Wrapper from "./Wrapper";
+import { Navigate } from "react-router";
 
-interface LoginFormProps {}
+interface LoginFormProps {
+  redirectToListUsers: () => void; // Função para redirecionar para o login
+}
 
-const LoginForm: React.FC<LoginFormProps> = () => {
+const LoginForm: React.FC<LoginFormProps> = ({ redirectToListUsers }) => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+
+  const [redirect, setRedirect] = useState<boolean>(false); // State para controlar o redirecionamento
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -21,7 +26,8 @@ const LoginForm: React.FC<LoginFormProps> = () => {
 
       if (response.ok) {
         console.log("Usuário autenticado com sucesso!");
-        // Aqui você pode redirecionar o usuário ou fazer outras ações após o login
+        redirectToListUsers();
+        setRedirect(true);
       } else {
         console.error("Falha ao autenticar usuário");
       }
@@ -29,6 +35,10 @@ const LoginForm: React.FC<LoginFormProps> = () => {
       console.error("Erro ao autenticar usuário:", error);
     }
   };
+
+  if (redirect) {
+    return <Navigate to="/listUsers" />;
+  }
 
   return (
     <Wrapper className="bg-[#111827]">

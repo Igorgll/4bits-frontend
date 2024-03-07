@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Wrapper from "./Wrapper";
+import { Navigate } from "react-router";
 
 interface FormData {
   name: string;
@@ -10,7 +11,11 @@ interface FormData {
   admin: boolean;
 }
 
-const SignUpForm: React.FC = () => {
+interface SignUpFormProps {
+  redirectToLogin: () => void; // Função para redirecionar para o login
+}
+
+const SignUpForm: React.FC<SignUpFormProps> = ({ redirectToLogin }) => {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
@@ -19,6 +24,8 @@ const SignUpForm: React.FC = () => {
     repeat_password: "",
     admin: true
   });
+
+  const [redirect, setRedirect] = useState<boolean>(false); // State para controlar o redirecionamento
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
@@ -51,6 +58,7 @@ const SignUpForm: React.FC = () => {
           repeat_password: "",
           admin: true
         });
+        setRedirect(true);
       } else {
         console.error("Falha ao registrar usuário");
       }
@@ -58,6 +66,10 @@ const SignUpForm: React.FC = () => {
       console.error("Erro ao registrar usuário:", error);
     }
   };
+
+  if(redirect) {
+    return <Navigate to="/login" />
+  }
 
   return (
     <Wrapper className="bg-[#111827]">
