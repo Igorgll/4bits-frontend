@@ -37,7 +37,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ redirectToListUsers }) => {
   };
 
   if (redirect) {
-    return <Navigate to="/listUsers" />;
+    return <Navigate to="/home" />;
   }
 
   return (
