@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Wrapper from "./Wrapper";
 
 interface UserDTO {
   name: string;
   email: string;
   password: string;
-  admin: boolean;
+  group: string;
   isActive: boolean;
 }
 
@@ -42,7 +42,7 @@ const ListUsers = () => {
             <tr>
               <th className="px-4 py-2 text-white">Nome</th>
               <th className="px-4 py-2 text-white">Email</th>
-              <th className="px-4 py-2 text-white">Admin</th>
+              <th className="px-4 py-2 text-white">Grupo</th>
               <th className="px-4 py-2 text-white">Ativo</th>
               <th className="px-4 py-2 text-white">Alterar Usuário</th>
             </tr>
@@ -53,7 +53,7 @@ const ListUsers = () => {
                 <td className="border px-4 py-2 text-white">{user.name}</td>
                 <td className="border px-4 py-2 text-white">{user.email}</td>
                 <td className="border px-4 py-2 text-white">
-                  {user.admin ? "Sim" : "Não"}
+                  {user.group}
                 </td>
                 <td className="border px-4 py-2 flex items-center justify-center text-white">
                   <label className="inline-flex items-center cursor-pointer">
