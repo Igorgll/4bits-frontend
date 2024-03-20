@@ -22,14 +22,14 @@ const Home = () => {
               Listar Produtos
             </Link>
           </li>
-          <li>
+         {/* <li>
             <Link
               to="#"
               className="text-white hover:bg-gray-700 px-4 py-2 rounded-md block"
             >
               Listar Pedidos
             </Link>
-          </li>
+          </li>*/}
         </ul>
       </div>
     </div>
