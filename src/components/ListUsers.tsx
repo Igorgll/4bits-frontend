@@ -49,60 +49,60 @@ const ListUsers = () => {
     fetchUsers();
   };
 
-const handleUpdateUser = async () => {
-  try {
-    if (!selectedUser) return;
-
-    const updatedUser = { ...selectedUser };
-
-    // Atualizar os dados do usuário com os valores dos campos de entrada
-    const nameInput = document.getElementById("name") as HTMLInputElement | null;
-    const emailInput = document.getElementById("email") as HTMLInputElement | null;
-    const cpfInput = document.getElementById("cpf") as HTMLInputElement | null;
-    const groupSelect = document.getElementById("group") as HTMLSelectElement | null;
-    const passwordInput = document.getElementById("password") as HTMLInputElement | null;
-    const confirmPasswordInput = document.getElementById("confirmPassword") as HTMLInputElement | null;
-
-    if (!nameInput || !emailInput || !cpfInput || !groupSelect || !passwordInput || !confirmPasswordInput) {
-      console.error("Não foi possível encontrar todos os elementos necessários.");
-      return;
-    }
-
-    updatedUser.name = nameInput.value;
-    updatedUser.email = emailInput.value;
-    updatedUser.cpf = cpfInput.value;
-    updatedUser.group = groupSelect.value;
-    updatedUser.password = passwordInput.value;
-
-    if (passwordInput.value !== confirmPasswordInput.value) {
-      console.error("Os campos de senha não correspondem.");
-      return;
-    }
-
-    // Atualize o estado selectedUser diretamente com o objeto atualizado
-    setSelectedUser(updatedUser);
-
-    const response = await fetch(
-      `http://localhost:8080/api/v1/users/updateUser/${selectedUser.userId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedUser),
+  const handleUpdateUser = async () => {
+    try {
+      if (!selectedUser) return;
+  
+      const updatedUser = { ...selectedUser };
+  
+      // Atualizar os dados do usuário com os valores dos campos de entrada
+      const nameInput = document.getElementById("name") as HTMLInputElement | null;
+      const emailInput = document.getElementById("email") as HTMLInputElement | null;
+      const cpfInput = document.getElementById("cpf") as HTMLInputElement | null;
+      const groupSelect = document.getElementById("group") as HTMLSelectElement | null;
+      const passwordInput = document.getElementById("password") as HTMLInputElement | null;
+      const confirmPasswordInput = document.getElementById("confirmPassword") as HTMLInputElement | null;
+  
+      if (!nameInput || !emailInput || !cpfInput || !groupSelect || !passwordInput || !confirmPasswordInput) {
+        console.error("Não foi possível encontrar todos os elementos necessários.");
+        return;
       }
-    );
-
-    if (response.ok) {
-      console.log("Usuário atualizado com sucesso");
-      handleCloseModal();
-    } else {
-      console.error("Falha ao atualizar o usuário");
+  
+      updatedUser.name = nameInput.value;
+      updatedUser.email = emailInput.value;
+      updatedUser.cpf = cpfInput.value;
+      updatedUser.group = groupSelect.value;
+      updatedUser.password = passwordInput.value;
+  
+      if (passwordInput.value !== confirmPasswordInput.value) {
+        console.error("Os campos de senha não correspondem.");
+        return;
+      }
+  
+      // Atualize o estado selectedUser diretamente com o objeto atualizado
+      setSelectedUser(updatedUser);
+  
+      const response = await fetch(
+        `http://localhost:8080/api/v1/users/updateUser/${selectedUser.userId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedUser),
+        }
+      );
+  
+      if (response.ok) {
+        console.log("Usuário atualizado com sucesso");
+        handleCloseModal();
+      } else {
+        console.error("Falha ao atualizar o usuário");
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar o usuário:", error);
     }
-  } catch (error) {
-    console.error("Erro ao atualizar o usuário:", error);
-  }
-};
+  };
 
   return (
     <Wrapper className="bg-[#111827]">
