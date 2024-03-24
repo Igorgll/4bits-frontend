@@ -3,6 +3,7 @@ import Wrapper from "./Wrapper";
 import { Label, Select, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow, TextInput } from 'flowbite-react';
 import { Button, Modal } from "flowbite-react";
 import SearchBar from "./SearchBar";
+import ConfirmUpdateUserDialog from "./ConfirmUpdateUserDialog";
 
 interface UserDTO {
   userId: number;
@@ -18,6 +19,7 @@ const ListUsers = () => {
   const [openModal, setOpenModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserDTO | null>(null); // Estado para armazenar o usuário selecionado para edição
   const [users, setUsers] = useState<UserDTO[]>([]); // Estado para armazenar os dados dos usuários
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
   const fetchUsers = async () => {
     try {
@@ -27,6 +29,7 @@ const ListUsers = () => {
       if (response.ok) {
         const data: UserDTO[] = await response.json();
         setUsers(data); // Atualiza o estado com os dados dos usuários
+        setConfirmDialogOpen(false);
       } else {
         console.error("Falha ao carregar os dados dos usuários");
       }
@@ -47,6 +50,10 @@ const ListUsers = () => {
   const handleCloseModal = () => {
     setOpenModal(false);
     fetchUsers();
+  };
+
+  const handleOpenConfirmDialog = () => {
+    setConfirmDialogOpen(true);
   };
 
   const handleUpdateUser = async () => {
@@ -81,7 +88,7 @@ const ListUsers = () => {
   
       // Atualize o estado selectedUser diretamente com o objeto atualizado
       setSelectedUser(updatedUser);
-  
+
       const response = await fetch(
         `http://localhost:8080/api/v1/users/updateUser/${selectedUser.userId}`,
         {
@@ -92,13 +99,14 @@ const ListUsers = () => {
           body: JSON.stringify(updatedUser),
         }
       );
-  
+
       if (response.ok) {
         console.log("Usuário atualizado com sucesso");
         handleCloseModal();
       } else {
         console.error("Falha ao atualizar o usuário");
       }
+      
     } catch (error) {
       console.error("Erro ao atualizar o usuário:", error);
     }
@@ -214,12 +222,20 @@ const ListUsers = () => {
                 type="password"
               />
             </div>
-            <div className="w-full">
-              <Button onClick={handleUpdateUser}>Confirmar Alteração</Button>
+            <div className="w-full flex justify-between">
+              <Button color="success" onClick={handleOpenConfirmDialog}>Alterar</Button>
+              <Button onClick={() => setOpenModal(false)}>Cancelar</Button>
             </div>
           </div>
           </Modal.Body>
         </Modal>
+      )}
+      {selectedUser && confirmDialogOpen && (
+        <ConfirmUpdateUserDialog 
+        user={selectedUser} 
+        onClose={() => setConfirmDialogOpen(false)} 
+        onUpdateUser={handleUpdateUser}
+        />
       )}
     </Wrapper>
   );
