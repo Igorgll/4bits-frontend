@@ -5,6 +5,7 @@ import ListUsers from "./components/ListUsers";
 import Home from "./components/Home";
 import SignUpForm from "./components/SignUpForm";
 import UpdateUserForm from "./components/UpdateUser";
+import ListProducts from "./components/ListProducts";
 
 export default function App() {
   const redirectToListUsers = () => {
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/home" element={<Home />}  />
         <Route path="/createUser" element={<SignUpForm redirectToLogin={redirectToLogin}/>}  />
         <Route path="/updateUser" element={<UpdateUserForm redirectToLogin={redirectToLogin} />}  />
+        <Route path="/listProducts" element={<ListProducts />}  />
       </Routes>
     </Router>
   );

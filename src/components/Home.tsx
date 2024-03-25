@@ -16,7 +16,7 @@ const Home = () => {
           </li>
           <li>
             <Link
-              to="#"
+              to="/listProducts"
               className="text-white hover:bg-gray-700 px-4 py-2 rounded-md block"
             >
               Listar Produtos
