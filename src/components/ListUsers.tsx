@@ -14,6 +14,8 @@ import {
 import { Button, Modal } from "flowbite-react";
 import SearchBar from "./SearchBar";
 import ConfirmUpdateUserDialog from "./ConfirmUpdateUserDialog";
+import { IoMdRefresh, IoMdRefreshCircle } from "react-icons/io";
+import { BiRefresh } from "react-icons/bi";
 
 interface UserDTO {
   userId: number;
@@ -209,6 +211,11 @@ const ListUsers = () => {
     setFilteredUsers(filtered);
   };  
 
+  const handleUpdateData = () => {
+      fetchUsers();
+      setFilteredUsers([]);
+  }
+
   return (
     <Wrapper className="bg-[#111827]">
       <SearchBar onSearch={handleSearch} />
@@ -220,6 +227,9 @@ const ListUsers = () => {
           <TableHeadCell>Grupo</TableHeadCell>
           <TableHeadCell>Status</TableHeadCell>
           <TableHeadCell>
+            <div className="flex items-center justify-center">
+              <IoMdRefresh size={22} color="white" cursor={"pointer"} onClick={handleUpdateData} />
+            </div>
             <span className="sr-only">Alterar</span>
           </TableHeadCell>
         </TableHead>
