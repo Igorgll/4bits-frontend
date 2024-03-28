@@ -279,14 +279,16 @@ const ListUsers = () => {
                 <TableCell>
                   <a
                     href="#"
-                    className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                    className={`font-medium ${
+                      user.active ? 'text-green-600' : 'text-red-600'
+                    } hover:underline`}
                     onClick={(e) => {
                       e.preventDefault();
                       const newStatus = !user.active;
                       handleChangeUserStatus(user.userId, newStatus);
                     }}
                   >
-                    {user.active ? "Inativo" : "Ativo"}
+                    {user.active ? "Ativo" : "Inativo"}
                   </a>
                 </TableCell>
                 <TableCell>
