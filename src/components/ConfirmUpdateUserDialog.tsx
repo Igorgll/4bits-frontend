@@ -8,7 +8,7 @@ interface UserDTO {
   cpf: string;
   group: string;
   password: string;
-  isActive: boolean;
+  active: boolean;
 }
 
 interface Props {

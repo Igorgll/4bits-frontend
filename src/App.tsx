@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, redirect } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginForm from "./components/LoginForm";
 import "./index.css";
 import ListUsers from "./components/ListUsers";
@@ -7,12 +7,8 @@ import SignUpForm from "./components/SignUpForm";
 import UpdateUserForm from "./components/UpdateUser";
 
 export default function App() {
-  const redirectToListUsers = () => {
-    console.log("Redirecionar para a list de users");
-    
-  }
-  const redirectToLogin = () => {
-    console.log("Redirecionar para a list de users"); }
+  const redirectToListUsers = () => {console.log("Redirecionar para a list de users");}
+  const redirectToLogin = () => {console.log("Redirecionar para a list de users");}
 
   return (
     <Router>
