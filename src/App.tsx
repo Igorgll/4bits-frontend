@@ -8,7 +8,8 @@ import CreateProduct from "./components/CreateProduct"; // Importe o componente 
 import "./index.css";
 
 export default function App() {
-  const redirectToListUsers = () => {---*-
+  const redirectToListUsers = () => {
+
     console.log("Redirecionar para a list de users");
   };
 
@@ -26,7 +27,8 @@ export default function App() {
         <Route path="/createUser" element={<SignUpForm redirectToLogin={redirectToLogin}/>}  />
         <Route path="/updateUser" element={<UpdateUserForm redirectToLogin={redirectToLogin} />}  />
         {/* Adicione a rota para a página de criar produto */}
-        <Route path="/createProduct" element={<CreateProductForm />} />
+        <Route path="/createProduct" element={<CreateProduct />} />
+
       </Routes>
     </Router>
   );
