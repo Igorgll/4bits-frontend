@@ -3,6 +3,8 @@ import Wrapper from "./Wrapper";
 import { Label, TextInput, Select } from "flowbite-react";
 import { Button, Modal } from "flowbite-react";
 import { ProductModel } from "./ProductModel";
+import { Link } from 'react-router-dom';
+
 
 const CreateProduct = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -155,7 +157,9 @@ const CreateProduct = () => {
               <Button color="success" onClick={handleCreateProduct}>
                 Criar
               </Button>
+
               <Button onClick={handleCloseModal}>Cancelar</Button>
+              <Link to="/listProduct"></Link>
             </div>
           </div>
         </Modal.Body>
