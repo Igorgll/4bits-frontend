@@ -5,7 +5,7 @@ interface props {
 
 export default function Wrapper({ children, className }: props){
   return (
-    <div className={`flex flex-col items-center justify-center w-screen h-screen ${className}`}>
+    <div className={`flex flex-col items-center justify-center w-screen h-screen overflow-y-auto ${className}`}>
       {children}
     </div>
   );
