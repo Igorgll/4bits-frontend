@@ -14,19 +14,6 @@ export default function SearchBar({ onSearch }: SearchBarProps ) {
   };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSearch(searchTerm);
@@ -81,7 +68,6 @@ export default function SearchBar({ onSearch }: SearchBarProps ) {
       </form>
     <div className=" p-0 text-sm text-gray-900    flex-wrap gap-3 justify-end">
                             <Button color="blue" style={{ fontSize: '-2.5', padding: '0.0rem 0.0rem 0.0rem', marginRight: '-1px' }} type="submit"  > + </Button>
-
                         </div>
 
 
