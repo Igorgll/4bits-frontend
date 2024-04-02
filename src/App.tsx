@@ -7,6 +7,7 @@ import SignUpForm from "./components/SignUpForm";
 import UpdateUserForm from "./components/UpdateUser";
 import ListProducts from "./components/ListProducts";
 import Home from "./pages/Home";
+import ProductDescription from "./pages/ProductDescription";
 
 export default function App() {
   const redirectToListUsers = () => {console.log("Redirecionar para a list de users");}
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/updateUser" element={<UpdateUserForm redirectToLogin={redirectToLogin} />}  />
         <Route path="/listProducts" element={<ListProducts />}  />
         <Route path="/home" element={<Home />} />
+        <Route path="/description" element={<ProductDescription />} />
       </Routes>
     </Router>
   );
