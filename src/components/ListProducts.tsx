@@ -13,6 +13,7 @@ import {
 } from "flowbite-react";
 import { Button, Modal } from "flowbite-react";
 import SearchBar from "./SearchBar";
+import { BiRefresh } from "react-icons/bi";
 
 interface ProductDTO {
     productId: number;
@@ -67,7 +68,10 @@ interface ProductDTO {
 
       return (
         <Wrapper className="bg-[#111827]">
-          <SearchBar onSearch={handleSearch} />
+          <div className="flex flex-row items-center w-[500px]">
+            <SearchBar onSearch={handleSearch} />
+            <div className="relative"><span className="text-white">+</span></div>
+          </div>
           
           <Table striped>
             <TableHead>
