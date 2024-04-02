@@ -4,9 +4,8 @@ import { BiCart } from "react-icons/bi";
 export default function Navbar() {
   return (
     <Nav fluid rounded>
-      <Nav.Brand>
-        {/* <img src="/favicon.svg" className="mr-3 h-6 sm:h-9" alt="Flowbite React Logo" /> */}
-        <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">4bits LOGO</span>
+      <Nav.Brand href="/home">
+        <img src="https://imgur.com/m1xs6LH.png" className="mr-3 h-6 sm:h-9" alt="4bits Logo" />
       </Nav.Brand>
       <div className="flex md:order-2">
         <div className="flex items-center gap-4">
@@ -16,14 +15,14 @@ export default function Navbar() {
         </div>
         <Nav.Toggle />
       </div>
-      <Nav.Collapse>
-        <Nav.Link href="#" active>
+      {/* <Nav.Collapse>
+        <Nav.Link href="/home" active>
           Home
         </Nav.Link>
         <Nav.Link href="#">Sobre</Nav.Link>
         <Nav.Link href="#">Serviços</Nav.Link>
         <Nav.Link href="#">Contato</Nav.Link>
-      </Nav.Collapse>
+      </Nav.Collapse> */}
     </Nav>
   );
 }
