@@ -13,6 +13,7 @@ import {
 } from "flowbite-react";
 import { Button, Modal } from "flowbite-react";
 import SearchBar from "./SearchBar";
+import { BiPlus } from "react-icons/bi";
 
 interface ProductDTO {
     productId: number;
@@ -77,7 +78,8 @@ interface ProductDTO {
               <TableHeadCell>Avaliação</TableHeadCell>
               <TableHeadCell>Estoque</TableHeadCell>   
               <TableHeadCell>Status</TableHeadCell>
-              <TableHeadCell></TableHeadCell>   
+              <TableHeadCell></TableHeadCell>
+              <TableHeadCell>Adicionar Produto</TableHeadCell>   
             </TableHead>
             <TableBody className="divide-y">
               {products.map((product, index) => (
@@ -108,6 +110,14 @@ interface ProductDTO {
                     className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
                   >
                     Alterar
+                  </a>
+                </TableCell>
+                <TableCell className="flex justify-center">
+                  <a
+                    href="#"
+                    className="font-medium text-green-500 hover:underline dark:text-green-500"
+                  >
+                    <BiPlus size={24} />
                   </a>
                 </TableCell>
               </TableRow>
