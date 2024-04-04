@@ -33,9 +33,10 @@ interface ProductDTO {
 const ListProducts = () => {
   const [openModal, setOpenModal] = useState(false);
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<ProductDTO | null>(null);
   const [products, setProducts] = useState<ProductDTO[]>([]); // Estado para armazenar os dados dos produtos
   const [filteredProducts, setFilteredProducts] = useState<ProductDTO[]>([]); // Estado para armazenar os produtos filtrados
-  const [selectedProduct, setSelectedProduct] = useState<ProductDTO | null>(null); // Estado para armazenar o produto selecionado para edição
+
 
 
   const [productDTO, setProductDTO] = useState<ProductDTO>({
@@ -99,9 +100,11 @@ const handleOpenModal = (product: ProductDTO) => {
 
 
  const handleUpdateOpenModal = (product: ProductDTO) => {
-          setSelectedProduct(product);
-          setOpenUpdateModal(true);
-        };
+   setSelectedProduct(product);
+   setProductDTO({ ...product }); // Preencher productDTO com os dados do produto selecionado
+   setOpenUpdateModal(true);
+ };
+
 
 
  const handleUpdateCloseModal = () => {
@@ -155,6 +158,11 @@ const handleOpenModal = (product: ProductDTO) => {
     }
   };
 
+
+
+
+
+
   
   const handleChangeProductStatus = async (productId: number, active: boolean) => {
     try {
@@ -206,50 +214,53 @@ const handleUpdateProduct = async () => {
 
       // Atualizar os dados do usuário com os valores dos campos de entrada
 
-      const productNameInput = document.getElementById(
-        "name"
-      ) as HTMLInputElement | null;
-      const priceInput = document.getElementById(
-        "price"
-      ) as HTMLInputElement | null;
-      const descriptionInput = document.getElementById(
-        "description"
-      ) as HTMLInputElement | null;
-      const ratingInput = document.getElementById(
-        "rating"
-      ) as HTMLSelectElement | null;
-      const storageInput = document.getElementById(
-        "storage"
-      )
+     const productNameInput = document.getElementById(
+       "productName"
+     ) as HTMLInputElement | null;
+     const priceInput = document.getElementById(
+       "price"
+     ) as HTMLInputElement | null;
+     const descriptionInput = document.getElementById(
+       "description"
+     ) as HTMLInputElement | null;
+     const ratingInput = document.getElementById(
+       "rating"
+     ) as HTMLInputElement | null;
+     const storageInput = document.getElementById(
+       "storage"
+     ) as HTMLInputElement | null;
+     const imageInput = document.getElementById(
+       "image_0"
+     ) as HTMLInputElement | null;
+     const isActiveInput = document.getElementById(
+       "isActive"
+     ) as HTMLSelectElement | null;
 
+     if (
+       !productNameInput ||
+       !priceInput ||
+       !descriptionInput ||
+       !ratingInput ||
+       !storageInput ||
+       !imageInput ||
+       !isActiveInput
+     ) {
+       console.error("Todos os campos obrigatórios devem ser preenchidos");
+       return;
+     }
 
+      updatedProduct.productName = productNameInput.value;
+      updatedProduct.price = priceInput.value;
+      updatedProduct.description = descriptionInput.value;
+      updatedProduct.rating = ratingInput.value;
+      updatedProduct.storage = storageInput.value;
+      updatedProduct.image = imageInput.value;
+      updatedProduct.isActive = isActiveInput.value;
 
-      if (
-        !productNameInput ||
-        !priceInput ||
-        !descriptionInput ||
-        !ratingInput ||
-        !storageInput
-      ) {
-        console.error(
-          "Não foi possível encontrar todos os elementos necessários."
-        );
-        return;
-      }
-
-      updatedProduct.product = nameInput.value;
-      updatedProduct.price = emailInput.value;
-      updatedProduct.description = cpfInput.value;
-      updatedProduct.rating = groupSelect.value;
-      updatedProduct.storage = passwordInput.value;
-
-
-
-      // Atualize o estado selectedUser diretamente com o objeto atualizado
-      setSelectedUser(updatedUser);
+      setSelectedProduct(updatedProduct);
 
       const response = await fetch(
-        `http://localhost:8080/api/v1/users/updateUser/${selectedProduct.userId}`,
+        `http://localhost:8080/api/v1/products/updateProduct/${selectedProduct.productId}`,
         {
           method: "PUT",
           headers: {
@@ -260,17 +271,15 @@ const handleUpdateProduct = async () => {
       );
 
       if (response.ok) {
-        console.log("Usuário atualizado com sucesso");
+        console.log("Produto atualizado com sucesso");
         handleCloseModal();
       } else {
-        console.error("Falha ao atualizar o usuário");
+        console.error("Falha ao alterar o produto");
       }
     } catch (error) {
-      console.error("Erro ao atualizar o usuário:", error);
+      console.error("Erro ao alterar o produto:", error);
     }
   };
-
-
 
   return (
     <Wrapper className="bg-[#111827]">
@@ -376,6 +385,7 @@ const handleUpdateProduct = async () => {
             ))
           )}
         </TableBody>
+
       </Table>
 
       <Modal show={openModal} onClose={handleCloseModal}>
@@ -487,129 +497,115 @@ const handleUpdateProduct = async () => {
         </Modal.Body>
       </Modal>
 
-
-
-
-      <Modal show={openUpdateModal} onClose={handleUpdateCloseModal}>
-              <Modal.Header />
-              <Modal.Body>
-                <form onSubmit={handleSubmit}>
-                <div className="space-y-6">
-                  <h3 className="text-xl font-medium text-gray-900 dark:text-white">
-                    Alterar Produto
-                  </h3>
-                  <div>
-                    <div className="mb-2 block">
-                      <Label htmlFor="productName" value="Nome do Produto" />
-                    </div>
-                    <TextInput
-                      id="productName"
-                      value={productDTO.productName}
-                      onChange={(e) => setProductDTO({ ...productDTO, productName: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <div className="mb-2 block">
-                      <Label htmlFor="price" value="Preço" />
-                    </div>
-                    <TextInput
-                      id="price"
-                      type="number"
-                      value={productDTO.price.toString()}
-                      onChange={(e) => setProductDTO({ ...productDTO, price: parseFloat(e.target.value) })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <div className="mb-2 block">
-                      <Label htmlFor="description" value="Descrição" />
-                    </div>
-                    <TextInput
-                      id="description"
-                      value={productDTO.description}
-                      onChange={(e) => setProductDTO({ ...productDTO, description: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <div className="mb-2 block">
-                      <Label htmlFor="rating" value="Avaliação" />
-                    </div>
-                    <TextInput
-                      id="rating"
-                      type="number"
-                      value={productDTO.rating.toString()}
-                      onChange={(e) => setProductDTO({ ...productDTO, rating: parseFloat(e.target.value) })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <div className="mb-2 block">
-                      <Label htmlFor="storage" value="Estoque" />
-                    </div>
-                    <TextInput
-                      id="storage"
-                      type="number"
-                      value={productDTO.storage.toString()}
-                      onChange={(e) => setProductDTO({ ...productDTO, storage: parseFloat(e.target.value) })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <div className="mb-2 block">
-                      <Label value="Links das Imagens" />
-                    </div>
-                    {productDTO.productImages.map((image, index) => (
-                      <div key={index} className="mb-2">
-                        <TextInput
-                          id={`image_${index}`}
-                          type="string"
-                          value={image.imagePath}
-                          onChange={(e) => handleImageChange(index, e.target.value)}
-                          required
-                        />
-                      </div>
-                    ))}
-                    <Button color="info" onClick={handleAddImage}>Adicionar Imagem</Button>
-                  </div>
-                  <div>
-                    <div className="mb-2 block">
-                      <Label htmlFor="isActive" value="Ativo" />
-                    </div>
-                    <Select
-                      id="isActive"
-                      defaultValue={productDTO.active ? "true" : "false"}
-                      onChange={(e) => setProductDTO({ ...productDTO, active: e.target.value === "true" })}
-                      required
-                    >
-                      <option value="true">Sim</option>
-                      <option value="false">Não</option>
-                    </Select>
-                  </div>
-                  <div className="w-full flex justify-between">
-                    <Button type="submit" color="success">
-                      Criar
-                    </Button>
-
-                    <Button onClick={handleCloseModal}>Cancelar</Button>
-                  </div>
-                </div>
-                </form>
-              </Modal.Body>
-            </Modal>
-
-
-
-
-
-
-
-
-
-
-
-
+<Modal show={openUpdateModal} onClose={handleUpdateCloseModal}>
+  <Modal.Header />
+  <Modal.Body>
+    <form onSubmit={handleUpdateProduct}>
+     {selectedProduct && (
+      <div className="space-y-6">
+        <h3 className="text-xl font-medium text-gray-900 dark:text-white">
+          Alterar Produto
+        </h3>
+        <div>
+          <div className="mb-2 block">
+            <Label htmlFor="productName" value="Nome do Produto" />
+          </div>
+          <TextInput
+            id="productName"
+            value={productDTO.productName}
+            onChange={(e) => setProductDTO({ ...productDTO, productName: e.target.value })}
+            required
+          />
+        </div>
+        <div>
+          <div className="mb-2 block">
+            <Label htmlFor="price" value="Preço" />
+          </div>
+          <TextInput
+            id="price"
+            type="number"
+            value={productDTO.price.toString()}
+            onChange={(e) => setProductDTO({ ...productDTO, price: parseFloat(e.target.value) })}
+            required
+          />
+        </div>
+        <div>
+          <div className="mb-2 block">
+            <Label htmlFor="description" value="Descrição" />
+          </div>
+          <TextInput
+            id="description"
+            value={productDTO.description}
+            onChange={(e) => setProductDTO({ ...productDTO, description: e.target.value })}
+            required
+          />
+        </div>
+        <div>
+          <div className="mb-2 block">
+            <Label htmlFor="rating" value="Avaliação" />
+          </div>
+          <TextInput
+            id="rating"
+            type="number"
+            value={productDTO.rating.toString()}
+            onChange={(e) => setProductDTO({ ...productDTO, rating: parseFloat(e.target.value) })}
+            required
+          />
+        </div>
+        <div>
+          <div className="mb-2 block">
+            <Label htmlFor="storage" value="Estoque" />
+          </div>
+          <TextInput
+            id="storage"
+            type="number"
+            value={productDTO.storage.toString()}
+            onChange={(e) => setProductDTO({ ...productDTO, storage: parseFloat(e.target.value) })}
+            required
+          />
+        </div>
+        <div>
+          <div className="mb-2 block">
+            <Label value="Links das Imagens" />
+          </div>
+          {productDTO.productImages.map((image, index) => (
+            <div key={index} className="mb-2">
+              <TextInput
+                id={`image_${index}`}
+                type="string"
+                value={image.imagePath}
+                onChange={(e) => handleImageChange(index, e.target.value)}
+                required
+              />
+            </div>
+          ))}
+          <Button color="info" onClick={handleAddImage}>Adicionar Imagem</Button>
+        </div>
+        <div>
+          <div className="mb-2 block">
+            <Label htmlFor="isActive" value="Ativo" />
+          </div>
+          <Select
+            id="isActive"
+            defaultValue={productDTO.active ? "true" : "false"}
+            onChange={(e) => setProductDTO({ ...productDTO, active: e.target.value === "true" })}
+            required
+          >
+            <option value="true">Sim</option>
+            <option value="false">Não</option>
+          </Select>
+        </div>
+        <div className="w-full flex justify-between">
+          <Button type="submit" color="success">
+            Atualizar Produto
+          </Button>
+          <Button onClick={handleUpdateCloseModal}>Cancelar</Button>
+        </div>
+      </div>
+     )}
+    </form>
+  </Modal.Body>
+</Modal>
 
 
 
