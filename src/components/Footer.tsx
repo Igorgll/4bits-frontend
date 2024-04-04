@@ -1,4 +1,4 @@
-import { Footer as FooterFlowbite } from "flowbite-react";
+import { FooterBrand, Footer as FooterFlowbite } from "flowbite-react";
 import { BsDribbble, BsFacebook, BsGithub, BsInstagram, BsTwitter } from "react-icons/bs";
 
 export default function Footer() {
@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="w-full">
         <div className="grid w-full grid-cols-2 gap-8 px-6 py-8 md:grid-cols-4">
           <div>
-            <FooterFlowbite.Title title="Empresa" />
+            <FooterBrand src="https://imgur.com/m1xs6LH.png" className="mr-3 mb-4 h-6 sm:h-9" alt="4bits Logo" />
             <FooterFlowbite.LinkGroup col>
               <FooterFlowbite.Link href="#">Sobre</FooterFlowbite.Link>
               <FooterFlowbite.Link href="#">Blog</FooterFlowbite.Link>

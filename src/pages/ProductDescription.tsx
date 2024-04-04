@@ -1,10 +1,8 @@
 import { BiCart } from "react-icons/bi";
-import Carousel from "../components/Carousel";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-import { Carousel as FlowbiteCarousel } from "flowbite-react";
+import { Button, Carousel as FlowbiteCarousel } from "flowbite-react";
 import StarIcon from "../components/StarIcon";
-
 
 export default function ProductDescription(){
   return (
@@ -31,12 +29,14 @@ export default function ProductDescription(){
           <p className="mb-28 line-clamp-8">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Fugiat molestiae hic ipsa ullam, magnam aspernatur minus beatae labore recusandae pariatur sed tempore delectus eos natus mollitia maxime et quis asperiores.
           Lorem ipsum dolor, sit amet consectetur adipisicing elit. Fugiat molestiae hic ipsa ullam.</p>
           <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">R$ 250.00</h3>
-          <a
+          <Button
             href="#"
             className="rounded-lg bg-cyan-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
+            disabled
           >
             Adicionar ao carrinho
-          </a>
+            <BiCart size={24} className="ms-4" />
+          </Button>
         </div>
       </div>
         </div>
