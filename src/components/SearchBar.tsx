@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Button } from "flowbite-react";
+
 
 interface SearchBarProps {
   onSearch: (searchItem: string) => void;
@@ -10,6 +12,7 @@ export default function SearchBar({ onSearch }: SearchBarProps ) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
+
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,6 +44,7 @@ export default function SearchBar({ onSearch }: SearchBarProps ) {
                 d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
               />
             </svg>
+
           </div>
           <input
             type="search"
@@ -50,6 +54,8 @@ export default function SearchBar({ onSearch }: SearchBarProps ) {
             className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             placeholder="Pesquise por nome"
             required
+
+
           />
           <button
             type="submit"
@@ -58,7 +64,11 @@ export default function SearchBar({ onSearch }: SearchBarProps ) {
             Pesquisar
           </button>
         </div>
+
       </form>
+
+
+
     </>
   );
 }

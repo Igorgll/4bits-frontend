@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginForm from "./components/LoginForm";
-import "./index.css";
 import ListUsers from "./components/ListUsers";
 import Options from "./components/Options";
 import SignUpForm from "./components/SignUpForm";
@@ -9,9 +8,17 @@ import ListProducts from "./components/ListProducts";
 import Home from "./pages/Home";
 import ProductDescription from "./pages/ProductDescription";
 
+
+
 export default function App() {
-  const redirectToListUsers = () => {console.log("Redirecionar para a list de users");}
-  const redirectToLogin = () => {console.log("Redirecionar para a list de users");}
+  const redirectToListUsers = () => {
+
+    console.log("Redirecionar para a list de users");
+  };
+
+  const redirectToLogin = () => {
+    console.log("Redirecionar para a list de users");
+  };
 
   return (
     <Router>
