@@ -126,6 +126,39 @@ const ListProducts = () => {
     }
   };
   
+  const handleChangeProductStatus = async (productId: number, active: boolean) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v1/products/isProductActive/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ productId, active }),
+        }
+      );
+  
+      if (response.ok) {
+        const updatedProducts = products.map((product) => {
+          if (product.productId === productId) {
+            return {
+              ...product,
+              active: active,
+            };
+          }
+          return product;
+        });
+        setProducts(updatedProducts); // Atualize o estado localmente
+        console.log("Status do produto alterado com sucesso");
+      } else {
+        console.error("Falha ao mudar o status do produto:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Falha ao mudar o status do produto:", error);
+    }
+  };
+
   const handleSearch = (searchTerm: string) => {
     const filtered = products.filter((product) =>
       product.productName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -164,6 +197,7 @@ const ListProducts = () => {
               <TableCell>{product.storage}</TableCell>
               <TableCell>
                 <a
+                  onClick={() => handleChangeProductStatus(product.productId, !product.active)}
                   href="#"
                   className={`font-medium ${
                     product.active ? "text-green-600" : "text-red-600"
@@ -327,7 +361,7 @@ const ListProducts = () => {
               <Select
                 id="isActive"
                 defaultValue={productDTO.active ? "true" : "false"}
-                onChange={(e) => setProductDTO({ ...productDTO, active: e.target.value === "true" })}
+                onChange={(e) => setProductDTO({ ...productDTO, active: e.target.value === "true" ? true : false })}
                 required
               >
                 <option value="true">Sim</option>
