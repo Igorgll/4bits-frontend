@@ -149,7 +149,8 @@ const ListProducts = () => {
           <TableHeadCell>Adicionar Produto</TableHeadCell>
         </TableHead>
         <TableBody className="divide-y">
-          {products.map((product, index) => (
+          {filteredProducts.length === 0 ? (
+          products.map((product, index) => (
             <TableRow
               key={index}
               className="bg-white dark:border-gray-700 dark:bg-gray-800"
@@ -189,7 +190,50 @@ const ListProducts = () => {
                 </a>
               </TableCell>
             </TableRow>
-          ))}
+          ))
+          ) : (
+            filteredProducts.map((product, index) => (
+              <TableRow
+                key={index}
+                className="bg-white dark:border-gray-700 dark:bg-gray-800"
+              >
+                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                  {product.productName}
+                </TableCell>
+                <TableCell>{product.price}</TableCell>
+                <TableCell>{product.description}</TableCell>
+                <TableCell>{product.rating}</TableCell>
+                <TableCell>{product.storage}</TableCell>
+                <TableCell>
+                  <a
+                    href="#"
+                    className={`font-medium ${
+                      product.active ? "text-green-600" : "text-red-600"
+                    } hover:underline`}
+                  >
+                    {product.active ? "Ativo" : "Inativo"}
+                  </a>
+                </TableCell>
+                <TableCell>
+                  <a
+                    href="#"
+                    className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                  >
+                    Alterar
+                  </a>
+                </TableCell>
+                <TableCell className="flex justify-center">
+                  <a
+                    onClick={handleOpenModal}
+                    href="#"
+                    className="font-medium text-green-450 hover:underline dark:text-green-500"
+                  >
+                    <BiPlus size={24} />
+                  </a>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
 
