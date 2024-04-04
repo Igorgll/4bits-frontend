@@ -126,6 +126,39 @@ const ListProducts = () => {
     }
   };
   
+  const handleChangeProductStatus = async (productId: number, active: boolean) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v1/products/isProductActive/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ productId, active }),
+        }
+      );
+  
+      if (response.ok) {
+        const updatedProducts = products.map((product) => {
+          if (product.productId === productId) {
+            return {
+              ...product,
+              active: active,
+            };
+          }
+          return product;
+        });
+        setProducts(updatedProducts); // Atualize o estado localmente
+        console.log("Status do produto alterado com sucesso");
+      } else {
+        console.error("Falha ao mudar o status do produto:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Falha ao mudar o status do produto:", error);
+    }
+  };
+
   const handleSearch = (searchTerm: string) => {
     const filtered = products.filter((product) =>
       product.productName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -149,7 +182,8 @@ const ListProducts = () => {
           <TableHeadCell>Adicionar Produto</TableHeadCell>
         </TableHead>
         <TableBody className="divide-y">
-          {products.map((product, index) => (
+          {filteredProducts.length === 0 ? (
+          products.map((product, index) => (
             <TableRow
               key={index}
               className="bg-white dark:border-gray-700 dark:bg-gray-800"
@@ -163,6 +197,7 @@ const ListProducts = () => {
               <TableCell>{product.storage}</TableCell>
               <TableCell>
                 <a
+                  onClick={() => handleChangeProductStatus(product.productId, !product.active)}
                   href="#"
                   className={`font-medium ${
                     product.active ? "text-green-600" : "text-red-600"
@@ -189,7 +224,50 @@ const ListProducts = () => {
                 </a>
               </TableCell>
             </TableRow>
-          ))}
+          ))
+          ) : (
+            filteredProducts.map((product, index) => (
+              <TableRow
+                key={index}
+                className="bg-white dark:border-gray-700 dark:bg-gray-800"
+              >
+                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                  {product.productName}
+                </TableCell>
+                <TableCell>{product.price}</TableCell>
+                <TableCell>{product.description}</TableCell>
+                <TableCell>{product.rating}</TableCell>
+                <TableCell>{product.storage}</TableCell>
+                <TableCell>
+                  <a
+                    href="#"
+                    className={`font-medium ${
+                      product.active ? "text-green-600" : "text-red-600"
+                    } hover:underline`}
+                  >
+                    {product.active ? "Ativo" : "Inativo"}
+                  </a>
+                </TableCell>
+                <TableCell>
+                  <a
+                    href="#"
+                    className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                  >
+                    Alterar
+                  </a>
+                </TableCell>
+                <TableCell className="flex justify-center">
+                  <a
+                    onClick={handleOpenModal}
+                    href="#"
+                    className="font-medium text-green-450 hover:underline dark:text-green-500"
+                  >
+                    <BiPlus size={24} />
+                  </a>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
 
@@ -283,7 +361,7 @@ const ListProducts = () => {
               <Select
                 id="isActive"
                 defaultValue={productDTO.active ? "true" : "false"}
-                onChange={(e) => setProductDTO({ ...productDTO, active: e.target.value === "true" })}
+                onChange={(e) => setProductDTO({ ...productDTO, active: e.target.value === "true" ? true : false })}
                 required
               >
                 <option value="true">Sim</option>
