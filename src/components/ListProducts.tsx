@@ -17,6 +17,7 @@ import { BiPlus } from "react-icons/bi";
 import { BsEyeFill } from "react-icons/bs";
 
 import ProductPreviewWindow from "./ProductPreviewWindow";
+import { IoMdRefresh } from "react-icons/io";
 
 interface ProductDTO {
   productId: number;
@@ -145,6 +146,7 @@ const ListProducts = () => {
       if (response.ok) {
         console.log("Produto cadastrado com sucesso");
         handleCloseModal();
+        fetchProducts();
       } else {
         console.error("Falha ao cadastrar o produto");
       }
@@ -199,6 +201,11 @@ const ListProducts = () => {
     setFilteredProducts(filtered);
   };
 
+  const handleUpdateData = () => {
+    fetchProducts();
+    setFilteredProducts([]);
+}
+
   const handleSelectProduct = (product: ProductDTO) => {
     setSelectedProduct(product);
     console.log(product);
@@ -217,7 +224,11 @@ const ListProducts = () => {
           <TableHeadCell>Avaliação</TableHeadCell>
           <TableHeadCell>Estoque</TableHeadCell>
           <TableHeadCell>Status</TableHeadCell>
-          <TableHeadCell></TableHeadCell>
+          <TableHeadCell>
+            <div className="flex items-center justify-center">
+              <IoMdRefresh size={22} color="white" cursor={"pointer"} onClick={handleUpdateData} />
+            </div>
+          </TableHeadCell>
           <TableHeadCell></TableHeadCell>
         </TableHead>
         <TableBody className="divide-y">

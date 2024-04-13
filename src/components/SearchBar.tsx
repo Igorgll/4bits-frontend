@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { BiPlus } from "react-icons/bi";
+import { useLocation } from "react-router-dom";
 
 interface SearchBarProps {
   onSearch: (searchItem: string) => void;
-  onOpenModal: () => void;
+  onOpenModal?: () => void;
 }
 
 export default function SearchBar({ onSearch, onOpenModal }: SearchBarProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const location = useLocation();
+  
+  const isListUsersPage = location.pathname === "/listUsers";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -61,13 +65,15 @@ export default function SearchBar({ onSearch, onOpenModal }: SearchBarProps) {
           </button>
         </div>
       </form>
-      <a
-        onClick={onOpenModal}
-        href="#"
-        className="font-medium text-green-450 hover:underline dark:text-green-500 mb-2"
-      >
-        <BiPlus size={32} />
-      </a>
+      {!isListUsersPage && (
+        <a
+          onClick={onOpenModal}
+          href="#"
+          className="font-medium text-green-450 hover:underline dark:text-green-500 mb-2"
+        >
+          <BiPlus size={32} />
+        </a>
+      )}
     </div>
   );
 }
