@@ -14,6 +14,10 @@ import {
 import { Button, Modal } from "flowbite-react";
 import SearchBar from "./SearchBar";
 import { BiPlus } from "react-icons/bi";
+import { BsEyeFill } from "react-icons/bs";
+
+import ProductPreviewWindow from "./ProductPreviewWindow";
+import { IoMdRefresh } from "react-icons/io";
 
 interface ProductDTO {
   productId: number;
@@ -30,7 +34,12 @@ const ListProducts = () => {
   const [openModal, setOpenModal] = useState(false);
   const [products, setProducts] = useState<ProductDTO[]>([]); // Estado para armazenar os dados dos usuários
   const [filteredProducts, setFilteredProducts] = useState<ProductDTO[]>([]); // Estado para armazenar os produtos filtrados
-  
+  const [openProductPreviewWindow, setOpenProductPreviewWindow] =
+    useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<ProductDTO | null>(
+    null
+  ); // Estado para armazenar o produto selecionado
+
   const [productDTO, setProductDTO] = useState<ProductDTO>({
     productId: 0,
     productName: "",
@@ -39,7 +48,7 @@ const ListProducts = () => {
     rating: 0,
     storage: 0,
     productImages: [],
-    active: true
+    active: true,
   });
 
   const fetchProducts = async () => {
@@ -84,7 +93,7 @@ const ListProducts = () => {
   const handleAddImage = () => {
     setProductDTO({
       ...productDTO,
-      productImages: [...productDTO.productImages, { imagePath: "" }]
+      productImages: [...productDTO.productImages, { imagePath: "" }],
     });
   };
 
@@ -94,30 +103,50 @@ const ListProducts = () => {
     setProductDTO({ ...productDTO, productImages: updatedImages });
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     e.preventDefault();
-    
+
     try {
-      const { productName, price, description, rating, storage, productImages, active } = productDTO;
-      
-      if (!productName || !price || !description || !rating || !storage || !productImages.length) {
+      const {
+        productName,
+        price,
+        description,
+        rating,
+        storage,
+        productImages,
+      } = productDTO;
+
+      if (
+        !productName ||
+        !price ||
+        !description ||
+        !rating ||
+        !storage ||
+        !productImages.length
+      ) {
         console.error("Todos os campos obrigatórios devem ser preenchidos");
         return;
       }
-  
+
       const newProduct = { ...productDTO };
-  
-      const response = await fetch("http://localhost:8080/api/v1/products/createProduct", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newProduct),
-      });
-  
+
+      const response = await fetch(
+        "http://localhost:8080/api/v1/products/createProduct",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newProduct),
+        }
+      );
+
       if (response.ok) {
         console.log("Produto cadastrado com sucesso");
         handleCloseModal();
+        fetchProducts();
       } else {
         console.error("Falha ao cadastrar o produto");
       }
@@ -125,8 +154,11 @@ const ListProducts = () => {
       console.error("Erro ao cadastrar o produto:", error);
     }
   };
-  
-  const handleChangeProductStatus = async (productId: number, active: boolean) => {
+
+  const handleChangeProductStatus = async (
+    productId: number,
+    active: boolean
+  ) => {
     try {
       const response = await fetch(
         `http://localhost:8080/api/v1/products/isProductActive/status`,
@@ -138,7 +170,7 @@ const ListProducts = () => {
           body: JSON.stringify({ productId, active }),
         }
       );
-  
+
       if (response.ok) {
         const updatedProducts = products.map((product) => {
           if (product.productId === productId) {
@@ -152,7 +184,10 @@ const ListProducts = () => {
         setProducts(updatedProducts); // Atualize o estado localmente
         console.log("Status do produto alterado com sucesso");
       } else {
-        console.error("Falha ao mudar o status do produto:", response.statusText);
+        console.error(
+          "Falha ao mudar o status do produto:",
+          response.statusText
+        );
       }
     } catch (error) {
       console.error("Falha ao mudar o status do produto:", error);
@@ -166,9 +201,20 @@ const ListProducts = () => {
     setFilteredProducts(filtered);
   };
 
+  const handleUpdateData = () => {
+    fetchProducts();
+    setFilteredProducts([]);
+}
+
+  const handleSelectProduct = (product: ProductDTO) => {
+    setSelectedProduct(product);
+    console.log(product);
+    setOpenProductPreviewWindow(true);
+  };
+
   return (
     <Wrapper className="bg-[#111827]">
-      <SearchBar onSearch={handleSearch} />
+      <SearchBar onSearch={handleSearch} onOpenModal={handleOpenModal} />
 
       <Table striped>
         <TableHead>
@@ -178,204 +224,257 @@ const ListProducts = () => {
           <TableHeadCell>Avaliação</TableHeadCell>
           <TableHeadCell>Estoque</TableHeadCell>
           <TableHeadCell>Status</TableHeadCell>
+          <TableHeadCell>
+            <div className="flex items-center justify-center">
+              <IoMdRefresh size={22} color="white" cursor={"pointer"} onClick={handleUpdateData} />
+            </div>
+          </TableHeadCell>
           <TableHeadCell></TableHeadCell>
-          <TableHeadCell>Adicionar Produto</TableHeadCell>
         </TableHead>
         <TableBody className="divide-y">
-          {filteredProducts.length === 0 ? (
-          products.map((product, index) => (
-            <TableRow
-              key={index}
-              className="bg-white dark:border-gray-700 dark:bg-gray-800"
-            >
-              <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                {product.productName}
-              </TableCell>
-              <TableCell>{product.price}</TableCell>
-              <TableCell>{product.description}</TableCell>
-              <TableCell>{product.rating}</TableCell>
-              <TableCell>{product.storage}</TableCell>
-              <TableCell>
-                <a
-                  onClick={() => handleChangeProductStatus(product.productId, !product.active)}
-                  href="#"
-                  className={`font-medium ${
-                    product.active ? "text-green-600" : "text-red-600"
-                  } hover:underline`}
+          {filteredProducts.length === 0
+            ? products.map((product, index) => (
+                <TableRow
+                  key={index}
+                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
                 >
-                  {product.active ? "Ativo" : "Inativo"}
-                </a>
-              </TableCell>
-              <TableCell>
-                <a
-                  href="#"
-                  className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                  <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                    {product.productName}
+                  </TableCell>
+                  <TableCell className="text-center">{product.price}</TableCell>
+                  <TableCell>{product.description}</TableCell>
+                  <TableCell className="text-center">
+                    {product.rating}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {product.storage}
+                  </TableCell>
+                  <TableCell>
+                    <a
+                      onClick={() =>
+                        handleChangeProductStatus(
+                          product.productId,
+                          !product.active
+                        )
+                      }
+                      href="#"
+                      className={`font-medium ${
+                        product.active ? "text-green-600" : "text-red-600"
+                      } hover:underline`}
+                    >
+                      {product.active ? "Ativo" : "Inativo"}
+                    </a>
+                  </TableCell>
+                  <TableCell>
+                    <a
+                      href="#"
+                      className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                    >
+                      Alterar
+                    </a>
+                  </TableCell>
+                  <TableCell>
+                    <BsEyeFill
+                      color="#cecece"
+                      cursor={"pointer"}
+                      onClick={() => handleSelectProduct(product)}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))
+            : filteredProducts.map((product, index) => (
+                <TableRow
+                  key={index}
+                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
                 >
-                  Alterar
-                </a>
-              </TableCell>
-              <TableCell className="flex justify-center">
-                <a
-                  onClick={handleOpenModal}
-                  href="#"
-                  className="font-medium text-green-450 hover:underline dark:text-green-500"
-                >
-                  <BiPlus size={24} />
-                </a>
-              </TableCell>
-            </TableRow>
-          ))
-          ) : (
-            filteredProducts.map((product, index) => (
-              <TableRow
-                key={index}
-                className="bg-white dark:border-gray-700 dark:bg-gray-800"
-              >
-                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                  {product.productName}
-                </TableCell>
-                <TableCell>{product.price}</TableCell>
-                <TableCell>{product.description}</TableCell>
-                <TableCell>{product.rating}</TableCell>
-                <TableCell>{product.storage}</TableCell>
-                <TableCell>
-                  <a
-                    href="#"
-                    className={`font-medium ${
-                      product.active ? "text-green-600" : "text-red-600"
-                    } hover:underline`}
-                  >
-                    {product.active ? "Ativo" : "Inativo"}
-                  </a>
-                </TableCell>
-                <TableCell>
-                  <a
-                    href="#"
-                    className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
-                  >
-                    Alterar
-                  </a>
-                </TableCell>
-                <TableCell className="flex justify-center">
-                  <a
-                    onClick={handleOpenModal}
-                    href="#"
-                    className="font-medium text-green-450 hover:underline dark:text-green-500"
-                  >
-                    <BiPlus size={24} />
-                  </a>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
+                  <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                    {product.productName}
+                  </TableCell>
+                  <TableCell>{product.price}</TableCell>
+                  <TableCell>{product.description}</TableCell>
+                  <TableCell>{product.rating}</TableCell>
+                  <TableCell>{product.storage}</TableCell>
+                  <TableCell>
+                    <a
+                      href="#"
+                      className={`font-medium ${
+                        product.active ? "text-green-600" : "text-red-600"
+                      } hover:underline`}
+                    >
+                      {product.active ? "Ativo" : "Inativo"}
+                    </a>
+                  </TableCell>
+                  <TableCell>
+                    <a
+                      href="#"
+                      className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                    >
+                      Alterar
+                    </a>
+                  </TableCell>
+                  <TableCell className="flex justify-center">
+                    <a
+                      onClick={handleOpenModal}
+                      href="#"
+                      className="font-medium text-green-450 hover:underline dark:text-green-500"
+                    >
+                      <BiPlus size={24} />
+                    </a>
+                  </TableCell>
+                </TableRow>
+              ))}
         </TableBody>
       </Table>
+
+      {selectedProduct && (
+        <ProductPreviewWindow
+          isOpen={openProductPreviewWindow}
+          onClose={() => setOpenProductPreviewWindow(false)}
+          productName={selectedProduct.productName}
+          price={selectedProduct.price}
+          description={selectedProduct.description}
+          rating={selectedProduct.rating}
+          productImages={selectedProduct.productImages}
+        />
+      )}
 
       <Modal show={openModal} onClose={handleCloseModal}>
         <Modal.Header />
         <Modal.Body>
           <form onSubmit={handleSubmit}>
-          <div className="space-y-6">
-            <h3 className="text-xl font-medium text-gray-900 dark:text-white">
-              Criar Produto
-            </h3>
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="productName" value="Nome do Produto" />
-              </div>
-              <TextInput
-                id="productName"
-                value={productDTO.productName}
-                onChange={(e) => setProductDTO({ ...productDTO, productName: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="price" value="Preço" />
-              </div>
-              <TextInput
-                id="price"
-                type="number"
-                value={productDTO.price.toString()}
-                onChange={(e) => setProductDTO({ ...productDTO, price: parseFloat(e.target.value) })}
-                required
-              />
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="description" value="Descrição" />
-              </div>
-              <TextInput
-                id="description"
-                value={productDTO.description}
-                onChange={(e) => setProductDTO({ ...productDTO, description: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="rating" value="Avaliação" />
-              </div>
-              <TextInput
-                id="rating"
-                type="number"
-                value={productDTO.rating.toString()}
-                onChange={(e) => setProductDTO({ ...productDTO, rating: parseFloat(e.target.value) })}
-                required
-              />
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="storage" value="Estoque" />
-              </div>
-              <TextInput
-                id="storage"
-                type="number"
-                value={productDTO.storage.toString()}
-                onChange={(e) => setProductDTO({ ...productDTO, storage: parseFloat(e.target.value) })}
-                required
-              />
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <Label value="Links das Imagens" />
-              </div>
-              {productDTO.productImages.map((image, index) => (
-                <div key={index} className="mb-2">
-                  <TextInput
-                    id={`image_${index}`}
-                    type="string"
-                    value={image.imagePath}
-                    onChange={(e) => handleImageChange(index, e.target.value)}
-                    required
-                  />
+            <div className="space-y-6">
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white">
+                Criar Produto
+              </h3>
+              <div>
+                <div className="mb-2 block">
+                  <Label htmlFor="productName" value="Nome do Produto" />
                 </div>
-              ))}
-              <Button color="info" onClick={handleAddImage}>Adicionar Imagem</Button>
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="isActive" value="Ativo" />
+                <TextInput
+                  id="productName"
+                  value={productDTO.productName}
+                  onChange={(e) =>
+                    setProductDTO({
+                      ...productDTO,
+                      productName: e.target.value,
+                    })
+                  }
+                  required
+                />
               </div>
-              <Select
-                id="isActive"
-                defaultValue={productDTO.active ? "true" : "false"}
-                onChange={(e) => setProductDTO({ ...productDTO, active: e.target.value === "true" ? true : false })}
-                required
-              >
-                <option value="true">Sim</option>
-                <option value="false">Não</option>
-              </Select>
-            </div>
-            <div className="w-full flex justify-between">
-              <Button type="submit" color="success">
-                Criar
-              </Button>
+              <div>
+                <div className="mb-2 block">
+                  <Label htmlFor="price" value="Preço" />
+                </div>
+                <TextInput
+                  id="price"
+                  type="number"
+                  value={productDTO.price.toString()}
+                  onChange={(e) =>
+                    setProductDTO({
+                      ...productDTO,
+                      price: parseFloat(e.target.value),
+                    })
+                  }
+                  required
+                />
+              </div>
+              <div>
+                <div className="mb-2 block">
+                  <Label htmlFor="description" value="Descrição" />
+                </div>
+                <TextInput
+                  id="description"
+                  value={productDTO.description}
+                  onChange={(e) =>
+                    setProductDTO({
+                      ...productDTO,
+                      description: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
+              <div>
+                <div className="mb-2 block">
+                  <Label htmlFor="rating" value="Avaliação" />
+                </div>
+                <TextInput
+                  id="rating"
+                  type="number"
+                  value={productDTO.rating.toString()}
+                  onChange={(e) =>
+                    setProductDTO({
+                      ...productDTO,
+                      rating: parseFloat(e.target.value),
+                    })
+                  }
+                  required
+                />
+              </div>
+              <div>
+                <div className="mb-2 block">
+                  <Label htmlFor="storage" value="Estoque" />
+                </div>
+                <TextInput
+                  id="storage"
+                  type="number"
+                  value={productDTO.storage.toString()}
+                  onChange={(e) =>
+                    setProductDTO({
+                      ...productDTO,
+                      storage: parseFloat(e.target.value),
+                    })
+                  }
+                  required
+                />
+              </div>
+              <div>
+                <div className="mb-2 block">
+                  <Label value="Links das Imagens" />
+                </div>
+                {productDTO.productImages.map((image, index) => (
+                  <div key={index} className="mb-2">
+                    <TextInput
+                      id={`image_${index}`}
+                      type="string"
+                      value={image.imagePath}
+                      onChange={(e) => handleImageChange(index, e.target.value)}
+                      required
+                    />
+                  </div>
+                ))}
+                <Button color="info" onClick={handleAddImage}>
+                  Adicionar Imagem
+                </Button>
+              </div>
+              <div>
+                <div className="mb-2 block">
+                  <Label htmlFor="isActive" value="Ativo" />
+                </div>
+                <Select
+                  id="isActive"
+                  defaultValue={productDTO.active ? "true" : "false"}
+                  onChange={(e) =>
+                    setProductDTO({
+                      ...productDTO,
+                      active: e.target.value === "true" ? true : false,
+                    })
+                  }
+                  required
+                >
+                  <option value="true">Sim</option>
+                  <option value="false">Não</option>
+                </Select>
+              </div>
+              <div className="w-full flex justify-between">
+                <Button type="submit" color="success">
+                  Criar
+                </Button>
 
-              <Button onClick={handleCloseModal}>Cancelar</Button>
+                <Button onClick={handleCloseModal}>Cancelar</Button>
+              </div>
             </div>
-          </div>
           </form>
         </Modal.Body>
       </Modal>
