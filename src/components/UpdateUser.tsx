@@ -77,7 +77,6 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ redirectToLogin }) => {
     return <Navigate to="/login" />
   }
 
-  return (
     <Wrapper className="bg-[#111827]">
       <form className="w-96 mx-auto" onSubmit={handleSubmit}>
         <div className="relative z-0 w-full mb-5 group">
@@ -97,7 +96,6 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ redirectToLogin }) => {
             Nome
           </label>
         </div>
-        
       
         <div className="relative z-0 w-full mb-5 group">
           <input
@@ -160,7 +158,6 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ redirectToLogin }) => {
         </button>
       </form>
     </Wrapper>
-  );
 };
 
 export default UpdateUserForm;
