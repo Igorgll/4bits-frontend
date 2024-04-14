@@ -3,7 +3,7 @@ import { BiCart } from "react-icons/bi";
 
 export default function Navbar() {
   return (
-    <Nav fluid rounded>
+    <Nav fluid>
       <Nav.Brand href="/home">
         <img src="https://imgur.com/m1xs6LH.png" className="mr-3 h-6 sm:h-9" alt="4bits Logo" />
       </Nav.Brand>
@@ -15,14 +15,6 @@ export default function Navbar() {
         </div>
         <Nav.Toggle />
       </div>
-      {/* <Nav.Collapse>
-        <Nav.Link href="/home" active>
-          Home
-        </Nav.Link>
-        <Nav.Link href="#">Sobre</Nav.Link>
-        <Nav.Link href="#">Serviços</Nav.Link>
-        <Nav.Link href="#">Contato</Nav.Link>
-      </Nav.Collapse> */}
     </Nav>
   );
 }

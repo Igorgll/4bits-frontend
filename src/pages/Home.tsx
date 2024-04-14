@@ -1,23 +1,19 @@
-import { List } from "flowbite-react";
-import Card from "../components/Card";
+import ProductCard from "../components/ProductCard";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 
 export default function Home() {
   return (
-    <div className="bg-[#111827]">
-        <Navbar />
-          <div className="p-20">
-            <List horizontal className="p-30 gap-4">
-              <List.Item><Card /></List.Item>
-              <List.Item><Card /></List.Item>
-              <List.Item><Card /></List.Item>
-              <List.Item><Card /></List.Item>
-              <List.Item><Card /></List.Item>
-              <List.Item><Card /></List.Item>
-            </List>
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <div className="flex-grow bg-[#111827]">
+        <div className="container mx-auto py-20">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            <ProductCard />
           </div>
-        <Footer />
+        </div>
+      </div>
+      <Footer />
     </div>
   );
 }

@@ -18,6 +18,7 @@ import { BsEyeFill } from "react-icons/bs";
 
 import ProductPreviewWindow from "./ProductPreviewWindow";
 import { IoMdRefresh } from "react-icons/io";
+import ProductCard from "./ProductCard";
 
 interface ProductDTO {
   productId: number;
@@ -32,7 +33,7 @@ interface ProductDTO {
 
 const ListProducts = () => {
   const [openModal, setOpenModal] = useState(false);
-  const [products, setProducts] = useState<ProductDTO[]>([]); // Estado para armazenar os dados dos usuários
+  const [products, setProducts] = useState<ProductDTO[]>([]); // Estado para armazenar os dados dos produtos
   const [filteredProducts, setFilteredProducts] = useState<ProductDTO[]>([]); // Estado para armazenar os produtos filtrados
   const [openProductPreviewWindow, setOpenProductPreviewWindow] =
     useState(false);
@@ -204,7 +205,7 @@ const ListProducts = () => {
   const handleUpdateData = () => {
     fetchProducts();
     setFilteredProducts([]);
-}
+  };
 
   const handleSelectProduct = (product: ProductDTO) => {
     setSelectedProduct(product);
@@ -226,7 +227,12 @@ const ListProducts = () => {
           <TableHeadCell>Status</TableHeadCell>
           <TableHeadCell>
             <div className="flex items-center justify-center">
-              <IoMdRefresh size={22} color="white" cursor={"pointer"} onClick={handleUpdateData} />
+              <IoMdRefresh
+                size={22}
+                color="white"
+                cursor={"pointer"}
+                onClick={handleUpdateData}
+              />
             </div>
           </TableHeadCell>
           <TableHeadCell></TableHeadCell>
@@ -234,94 +240,104 @@ const ListProducts = () => {
         <TableBody className="divide-y">
           {filteredProducts.length === 0
             ? products.map((product, index) => (
-                <TableRow
-                  key={index}
-                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
-                >
-                  <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                    {product.productName}
-                  </TableCell>
-                  <TableCell className="text-center">{product.price}</TableCell>
-                  <TableCell>{product.description}</TableCell>
-                  <TableCell className="text-center">
-                    {product.rating}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {product.storage}
-                  </TableCell>
-                  <TableCell>
-                    <a
-                      onClick={() =>
-                        handleChangeProductStatus(
-                          product.productId,
-                          !product.active
-                        )
-                      }
-                      href="#"
-                      className={`font-medium ${
-                        product.active ? "text-green-600" : "text-red-600"
-                      } hover:underline`}
-                    >
-                      {product.active ? "Ativo" : "Inativo"}
-                    </a>
-                  </TableCell>
-                  <TableCell>
-                    <a
-                      href="#"
-                      className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
-                    >
-                      Alterar
-                    </a>
-                  </TableCell>
-                  <TableCell>
-                    <BsEyeFill
-                      color="#cecece"
-                      cursor={"pointer"}
-                      onClick={() => handleSelectProduct(product)}
-                    />
-                  </TableCell>
-                </TableRow>
+                  <TableRow
+                    key={index}
+                    className="bg-white dark:border-gray-700 dark:bg-gray-800"
+                  >
+                    <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                      {product.productName}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {product.price}
+                    </TableCell>
+                    <TableCell>
+                      <p className="line-clamp-2 max-w-96">
+                        {product.description}
+                      </p>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {product.rating}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {product.storage}
+                    </TableCell>
+                    <TableCell>
+                      <a
+                        onClick={() =>
+                          handleChangeProductStatus(
+                            product.productId,
+                            !product.active
+                          )
+                        }
+                        href="#"
+                        className={`font-medium ${
+                          product.active ? "text-green-600" : "text-red-600"
+                        } hover:underline`}
+                      >
+                        {product.active ? "Ativo" : "Inativo"}
+                      </a>
+                    </TableCell>
+                    <TableCell>
+                      <a
+                        href="#"
+                        className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                      >
+                        Alterar
+                      </a>
+                    </TableCell>
+                    <TableCell>
+                      <BsEyeFill
+                        color="#cecece"
+                        cursor={"pointer"}
+                        onClick={() => handleSelectProduct(product)}
+                      />
+                    </TableCell>
+                  </TableRow>
               ))
             : filteredProducts.map((product, index) => (
-                <TableRow
-                  key={index}
-                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
-                >
-                  <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                    {product.productName}
-                  </TableCell>
-                  <TableCell>{product.price}</TableCell>
-                  <TableCell>{product.description}</TableCell>
-                  <TableCell>{product.rating}</TableCell>
-                  <TableCell>{product.storage}</TableCell>
-                  <TableCell>
-                    <a
-                      href="#"
-                      className={`font-medium ${
-                        product.active ? "text-green-600" : "text-red-600"
-                      } hover:underline`}
-                    >
-                      {product.active ? "Ativo" : "Inativo"}
-                    </a>
-                  </TableCell>
-                  <TableCell>
-                    <a
-                      href="#"
-                      className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
-                    >
-                      Alterar
-                    </a>
-                  </TableCell>
-                  <TableCell className="flex justify-center">
-                    <a
-                      onClick={handleOpenModal}
-                      href="#"
-                      className="font-medium text-green-450 hover:underline dark:text-green-500"
-                    >
-                      <BiPlus size={24} />
-                    </a>
-                  </TableCell>
-                </TableRow>
+                  <TableRow
+                    key={index}
+                    className="bg-white dark:border-gray-700 dark:bg-gray-800"
+                  >
+                    <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                      {product.productName}
+                    </TableCell>
+                    <TableCell>{product.price}</TableCell>
+                    <TableCell>
+                      <p className="line-clamp-2 max-w-96">
+                        {product.description}
+                      </p>
+                    </TableCell>
+                    <TableCell>{product.rating}</TableCell>
+                    <TableCell>{product.storage}</TableCell>
+                    <TableCell>
+                      <a
+                        href="#"
+                        className={`font-medium ${
+                          product.active ? "text-green-600" : "text-red-600"
+                        } hover:underline`}
+                      >
+                        {product.active ? "Ativo" : "Inativo"}
+                      </a>
+                    </TableCell>
+                    <TableCell>
+                      <a
+                        href="#"
+                        className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                      >
+                        Alterar
+                      </a>
+                    </TableCell>
+                    <TableCell className="flex justify-center">
+                      <a
+                        onClick={handleOpenModal}
+                        href="#"
+                        className="font-medium text-green-450 hover:underline dark:text-green-500"
+                      >
+                        <BiPlus size={24} />
+                      </a>
+                    </TableCell>
+                  </TableRow>
               ))}
         </TableBody>
       </Table>
