@@ -44,7 +44,7 @@ export default function App() {
         />
         <Route path="/listProducts" element={<ListProducts />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/description" element={<ProductDescription />} />
+        <Route path="/description/:productId" element={<ProductDescription />} />
       </Routes>
     </Router>
   );

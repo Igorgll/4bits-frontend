@@ -1,6 +1,7 @@
 import { Card } from "flowbite-react";
 import StarIcon from "./StarIcon";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom"; // Importe Link do React Router
 
 interface ProductDTO {
   productId: number;
@@ -48,15 +49,16 @@ const ProductCard = () => {
     <>
       {products.map((product) => (
         <Card
+          key={product.productId}
           className="max-w-sm"
           imgAlt={product.productName}
           imgSrc={product.productImages[0].imagePath}
         >
-          <a href="/description"> {/* Link para a página de detalhes do produto */}
+          <Link to={`/description/${product.productId}`}> {/* Link para a página de detalhes do produto */}
             <h5 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
               {product.productName}
             </h5>
-          </a>
+          </Link>
           <div className="flex items-center mb-8">
             {[...Array(5)].map((_, index) => (
               <StarIcon key={index} />
@@ -69,12 +71,12 @@ const ProductCard = () => {
             <span className="text-3xl font-bold text-gray-900 dark:text-white">
               R${product.price}
             </span>
-            <a
-              href="/description" // Link para a página de detalhes do produto
+            <Link
+              to={`/description/${product.productId}`} // Link para a página de detalhes do produto
               className="rounded-lg bg-cyan-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
             >
               Detalhes
-            </a>
+            </Link>
           </div>
         </Card>
       ))}

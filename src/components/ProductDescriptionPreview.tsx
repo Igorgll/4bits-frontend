@@ -18,21 +18,15 @@ const ProductDescriptionPreview: React.FC<ProductDescriptionPreviewProps> = ({
   productImages,
 }) => {
   return (
-    <div className="bg-[#111827]">
-      <div className="p-12">
-        <div className="grid h-56 grid-cols-2 gap-8 sm:h-64 xl:h-80 2xl:h-96">
+    <div className="flex flex-col min-h-fit bg-[#111827]">
+      <div className="p-8">
+        <div className="grid place-items-center h-56 grid-cols-2 gap-8 sm:h-64 xl:h-80 2xl:h-96">
           <FlowbiteCarousel slideInterval={5000}>
             {productImages.map((image, index) => (
               <img
                 key={index}
                 src={image.imagePath}
                 alt={`Product Image ${index + 1}`}
-                style={{
-                  maxWidth: "100%",
-                  height: "auto",
-                  maxHeight: "100%",
-                  objectFit: "cover",
-                }}
               />
             ))}
           </FlowbiteCarousel>
@@ -41,14 +35,12 @@ const ProductDescriptionPreview: React.FC<ProductDescriptionPreviewProps> = ({
               {productName}
             </h2>
             <div className="flex flex-row mb-4">
-              <StarIcon />
-              <StarIcon />
-              <StarIcon />
-              <StarIcon />
-              <StarIcon />
+              {[...Array(Math.round(rating))].map((_, index) => (
+                <StarIcon key={index} />
+              ))}
             </div>
-            <p className="line-clamp-8">{description}</p>
-            <h3 className="absolute bottom-[60px] text-2xl font-bold text-gray-900 dark:text-white mb-6">
+            <p className="mb-16 line-clamp-6">{description}</p>
+            <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
               R$ {price}
             </h3>
             <Button
