@@ -242,7 +242,11 @@ const ListProducts = () => {
                     {product.productName}
                   </TableCell>
                   <TableCell className="text-center">{product.price}</TableCell>
-                  <TableCell>{product.description}</TableCell>
+                  <TableCell>
+                    <p className="line-clamp-2 max-w-96"> 
+                      {product.description}
+                    </p>
+                    </TableCell>
                   <TableCell className="text-center">
                     {product.rating}
                   </TableCell>
@@ -291,7 +295,11 @@ const ListProducts = () => {
                     {product.productName}
                   </TableCell>
                   <TableCell>{product.price}</TableCell>
-                  <TableCell>{product.description}</TableCell>
+                  <TableCell>
+                    <p className="line-clamp-2 max-w-96"> 
+                      {product.description}
+                    </p>
+                    </TableCell>
                   <TableCell>{product.rating}</TableCell>
                   <TableCell>{product.storage}</TableCell>
                   <TableCell>
