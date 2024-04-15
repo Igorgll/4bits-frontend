@@ -38,6 +38,9 @@ const ProductDescriptionPreview: React.FC<ProductDescriptionPreviewProps> = ({
               {[...Array(Math.round(rating))].map((_, index) => (
                 <StarIcon key={index} />
               ))}
+              <span className="ml-3 mr-2 rounded bg-cyan-100 px-2.5 py-0.5 text-xs font-semibold text-cyan-800 dark:bg-cyan-200 dark:text-cyan-800">
+                {rating}
+              </span>
             </div>
             <p className="mb-6 line-clamp-6">{description}</p>
             <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
