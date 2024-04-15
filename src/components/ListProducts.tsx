@@ -94,6 +94,10 @@ const ListProducts = () => {
 
   const handleOpenUpdateModal = (product: ProductDTO) => {
     setSelectedProduct(product);
+    setProductDTO({
+      ...product,
+      productImages: product.productImages.map((image) => ({ ...image })),
+    });
     console.log(product);
     setOpenUpdateModal(true);
   };
@@ -164,6 +168,30 @@ const ListProducts = () => {
       }
     } catch (error) {
       console.error("Erro ao cadastrar o produto:", error);
+    }
+  };
+
+  const handleUpdateSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault();
+  
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/products/updateProduct/${selectedProduct.productId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productDTO),
+      });
+  
+      if (response.ok) {
+        console.log("Produto atualizado com sucesso");
+        handleCloseUpdateModal();
+        fetchProducts();
+      } else {
+        console.error("Falha ao atualizar o produto");
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar o produto:", error);
     }
   };
 
@@ -511,7 +539,7 @@ const ListProducts = () => {
           <>
             <Modal.Header />
             <Modal.Body>
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleUpdateSubmit}>
                 <div className="space-y-6">
                   <h3 className="text-xl font-medium text-gray-900 dark:text-white">
                     Alterar Produto
@@ -522,7 +550,7 @@ const ListProducts = () => {
                     </div>
                     <TextInput
                       id="productName"
-                      value={selectedProduct.productName}
+                      value={productDTO.productName || selectedProduct.productName}
                       onChange={(e) =>
                         setProductDTO({
                           ...productDTO,
@@ -539,7 +567,7 @@ const ListProducts = () => {
                     <TextInput
                       id="price"
                       type="number"
-                      value={selectedProduct.price}
+                      value={productDTO.price || selectedProduct.price}
                       onChange={(e) =>
                         setProductDTO({
                           ...productDTO,
@@ -555,7 +583,7 @@ const ListProducts = () => {
                     </div>
                     <TextInput
                       id="description"
-                      value={selectedProduct.description}
+                      value={productDTO.description || selectedProduct.description}
                       onChange={(e) =>
                         setProductDTO({
                           ...productDTO,
@@ -572,7 +600,7 @@ const ListProducts = () => {
                     <TextInput
                       id="rating"
                       type="number"
-                      value={selectedProduct.rating}
+                      value={productDTO.rating || selectedProduct.rating}
                       onChange={(e) =>
                         setProductDTO({
                           ...productDTO,
@@ -589,7 +617,7 @@ const ListProducts = () => {
                     <TextInput
                       id="storage"
                       type="number"
-                      value={selectedProduct.storage}
+                      value={productDTO.storage || selectedProduct.storage}
                       onChange={(e) =>
                         setProductDTO({
                           ...productDTO,
@@ -608,7 +636,7 @@ const ListProducts = () => {
                         <TextInput
                           id={`image_${index}`}
                           type="string"
-                          value={image.imagePath}
+                          value={productDTO.productImages[index]?.imagePath || image.imagePath}
                           onChange={(e) =>
                             handleImageChange(index, e.target.value)
                           }
