@@ -7,7 +7,6 @@ import UpdateUserForm from "./components/UpdateUser";
 import ListProducts from "./components/ListProducts";
 import Home from "./pages/Home";
 import ProductDescription from "./pages/ProductDescription";
-import SearchBar from "./components/SearchBar";
 
 export default function App() {
   const redirectToListUsers = () => {
