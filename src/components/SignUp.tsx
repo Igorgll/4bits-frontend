@@ -65,7 +65,7 @@ export default function SignUp({ onClose }: SignUpProps){
                 href="#"
                 className="text-cyan-700 hover:underline dark:text-cyan-500"
               >
-                Login
+                Fazer login
               </a>
             </div>
         </div>
