@@ -33,6 +33,7 @@ interface ProductDTO {
 
 const ListProducts = () => {
   const [openModal, setOpenModal] = useState(false);
+  const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const [products, setProducts] = useState<ProductDTO[]>([]); // Estado para armazenar os dados dos produtos
   const [filteredProducts, setFilteredProducts] = useState<ProductDTO[]>([]); // Estado para armazenar os produtos filtrados
   const [openProductPreviewWindow, setOpenProductPreviewWindow] =
@@ -89,6 +90,20 @@ const ListProducts = () => {
 
   const handleCloseModal = () => {
     setOpenModal(false);
+  };
+
+  const handleOpenUpdateModal = (product: ProductDTO) => {
+    setSelectedProduct(product);
+    setProductDTO({
+      ...product,
+      productImages: product.productImages.map((image) => ({ ...image })),
+    });
+    console.log(product);
+    setOpenUpdateModal(true);
+  };
+
+  const handleCloseUpdateModal = () => {
+    setOpenUpdateModal(false);
   };
 
   const handleAddImage = () => {
@@ -153,6 +168,30 @@ const ListProducts = () => {
       }
     } catch (error) {
       console.error("Erro ao cadastrar o produto:", error);
+    }
+  };
+
+  const handleUpdateSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault();
+  
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/products/updateProduct/${selectedProduct.productId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productDTO),
+      });
+  
+      if (response.ok) {
+        console.log("Produto atualizado com sucesso");
+        handleCloseUpdateModal();
+        fetchProducts();
+      } else {
+        console.error("Falha ao atualizar o produto");
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar o produto:", error);
     }
   };
 
@@ -240,104 +279,103 @@ const ListProducts = () => {
         <TableBody className="divide-y">
           {filteredProducts.length === 0
             ? products.map((product, index) => (
-                  <TableRow
-                    key={index}
-                    className="bg-white dark:border-gray-700 dark:bg-gray-800"
-                  >
-                    <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                      {product.productName}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {product.price}
-                    </TableCell>
-                    <TableCell>
-                      <p className="line-clamp-2 max-w-96">
-                        {product.description}
-                      </p>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {product.rating}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {product.storage}
-                    </TableCell>
-                    <TableCell>
-                      <a
-                        onClick={() =>
-                          handleChangeProductStatus(
-                            product.productId,
-                            !product.active
-                          )
-                        }
-                        href="#"
-                        className={`font-medium ${
-                          product.active ? "text-green-600" : "text-red-600"
-                        } hover:underline`}
-                      >
-                        {product.active ? "Ativo" : "Inativo"}
-                      </a>
-                    </TableCell>
-                    <TableCell>
-                      <a
-                        href="#"
-                        className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
-                      >
-                        Alterar
-                      </a>
-                    </TableCell>
-                    <TableCell>
-                      <BsEyeFill
-                        color="#cecece"
-                        cursor={"pointer"}
-                        onClick={() => handleSelectProduct(product)}
-                      />
-                    </TableCell>
-                  </TableRow>
+                <TableRow
+                  key={index}
+                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
+                >
+                  <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                    {product.productName}
+                  </TableCell>
+                  <TableCell className="text-center">{product.price}</TableCell>
+                  <TableCell>
+                    <p className="line-clamp-2 max-w-96">
+                      {product.description}
+                    </p>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {product.rating}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {product.storage}
+                  </TableCell>
+                  <TableCell>
+                    <a
+                      onClick={() =>
+                        handleChangeProductStatus(
+                          product.productId,
+                          !product.active
+                        )
+                      }
+                      href="#"
+                      className={`font-medium ${
+                        product.active ? "text-green-600" : "text-red-600"
+                      } hover:underline`}
+                    >
+                      {product.active ? "Ativo" : "Inativo"}
+                    </a>
+                  </TableCell>
+                  <TableCell>
+                    <a
+                      onClick={() => handleOpenUpdateModal(product)}
+                      href="#"
+                      className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                    >
+                      Alterar
+                    </a>
+                  </TableCell>
+                  <TableCell>
+                    <BsEyeFill
+                      color="#cecece"
+                      cursor={"pointer"}
+                      onClick={() => handleSelectProduct(product)}
+                    />
+                  </TableCell>
+                </TableRow>
               ))
             : filteredProducts.map((product, index) => (
-                  <TableRow
-                    key={index}
-                    className="bg-white dark:border-gray-700 dark:bg-gray-800"
-                  >
-                    <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                      {product.productName}
-                    </TableCell>
-                    <TableCell>{product.price}</TableCell>
-                    <TableCell>
-                      <p className="line-clamp-2 max-w-96">
-                        {product.description}
-                      </p>
-                    </TableCell>
-                    <TableCell>{product.rating}</TableCell>
-                    <TableCell>{product.storage}</TableCell>
-                    <TableCell>
-                      <a
-                        href="#"
-                        className={`font-medium ${
-                          product.active ? "text-green-600" : "text-red-600"
-                        } hover:underline`}
-                      >
-                        {product.active ? "Ativo" : "Inativo"}
-                      </a>
-                    </TableCell>
-                    <TableCell>
-                      <a
-                        href="#"
-                        className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
-                      >
-                        Alterar
-                      </a>
-                    </TableCell>
-                    <TableCell className="flex justify-center">
-                      <a
-                        onClick={handleOpenModal}
-                        href="#"
-                        className="font-medium text-green-450 hover:underline dark:text-green-500"
-                      >
-                        <BiPlus size={24} />
-                      </a>
-                    </TableCell>
-                  </TableRow>
+                <TableRow
+                  key={index}
+                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
+                >
+                  <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                    {product.productName}
+                  </TableCell>
+                  <TableCell>{product.price}</TableCell>
+                  <TableCell>
+                    <p className="line-clamp-2 max-w-96">
+                      {product.description}
+                    </p>
+                  </TableCell>
+                  <TableCell>{product.rating}</TableCell>
+                  <TableCell>{product.storage}</TableCell>
+                  <TableCell>
+                    <a
+                      href="#"
+                      className={`font-medium ${
+                        product.active ? "text-green-600" : "text-red-600"
+                      } hover:underline`}
+                    >
+                      {product.active ? "Ativo" : "Inativo"}
+                    </a>
+                  </TableCell>
+                  <TableCell>
+                    <a
+                      href="#"
+                      className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                    >
+                      Alterar
+                    </a>
+                  </TableCell>
+                  <TableCell className="flex justify-center">
+                    <a
+                      onClick={handleOpenModal}
+                      href="#"
+                      className="font-medium text-green-450 hover:underline dark:text-green-500"
+                    >
+                      <BiPlus size={24} />
+                    </a>
+                  </TableCell>
+                </TableRow>
               ))}
         </TableBody>
       </Table>
@@ -493,6 +531,154 @@ const ListProducts = () => {
             </div>
           </form>
         </Modal.Body>
+      </Modal>
+
+      {/* MODAL DE ALTERAR PRODUTO */}
+      <Modal show={openUpdateModal} onClose={handleCloseUpdateModal}>
+        {selectedProduct && (
+          <>
+            <Modal.Header />
+            <Modal.Body>
+              <form onSubmit={handleUpdateSubmit}>
+                <div className="space-y-6">
+                  <h3 className="text-xl font-medium text-gray-900 dark:text-white">
+                    Alterar Produto
+                  </h3>
+                  <div>
+                    <div className="mb-2 block">
+                      <Label htmlFor="productName" value="Nome do Produto" />
+                    </div>
+                    <TextInput
+                      id="productName"
+                      value={productDTO.productName || selectedProduct.productName}
+                      onChange={(e) =>
+                        setProductDTO({
+                          ...productDTO,
+                          productName: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div>
+                    <div className="mb-2 block">
+                      <Label htmlFor="price" value="Preço" />
+                    </div>
+                    <TextInput
+                      id="price"
+                      type="number"
+                      value={productDTO.price || selectedProduct.price}
+                      onChange={(e) =>
+                        setProductDTO({
+                          ...productDTO,
+                          price: parseFloat(e.target.value),
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div>
+                    <div className="mb-2 block">
+                      <Label htmlFor="description" value="Descrição" />
+                    </div>
+                    <TextInput
+                      id="description"
+                      value={productDTO.description || selectedProduct.description}
+                      onChange={(e) =>
+                        setProductDTO({
+                          ...productDTO,
+                          description: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div>
+                    <div className="mb-2 block">
+                      <Label htmlFor="rating" value="Avaliação" />
+                    </div>
+                    <TextInput
+                      id="rating"
+                      type="number"
+                      value={productDTO.rating || selectedProduct.rating}
+                      onChange={(e) =>
+                        setProductDTO({
+                          ...productDTO,
+                          rating: parseFloat(e.target.value),
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div>
+                    <div className="mb-2 block">
+                      <Label htmlFor="storage" value="Estoque" />
+                    </div>
+                    <TextInput
+                      id="storage"
+                      type="number"
+                      value={productDTO.storage || selectedProduct.storage}
+                      onChange={(e) =>
+                        setProductDTO({
+                          ...productDTO,
+                          storage: parseFloat(e.target.value),
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div>
+                    <div className="mb-2 block">
+                      <Label value="Links das Imagens" />
+                    </div>
+                    {selectedProduct.productImages.map((image, index) => (
+                      <div key={index} className="mb-2">
+                        <TextInput
+                          id={`image_${index}`}
+                          type="string"
+                          value={productDTO.productImages[index]?.imagePath || image.imagePath}
+                          onChange={(e) =>
+                            handleImageChange(index, e.target.value)
+                          }
+                          required
+                        />
+                      </div>
+                    ))}
+                    <Button color="info" onClick={handleAddImage}>
+                      Adicionar Imagem
+                    </Button>
+                  </div>
+                  <div>
+                    <div className="mb-2 block">
+                      <Label htmlFor="isActive" value="Ativo" />
+                    </div>
+                    <Select
+                      id="isActive"
+                      defaultValue={selectedProduct.active ? "true" : "false"}
+                      onChange={(e) =>
+                        setProductDTO({
+                          ...productDTO,
+                          active: e.target.value === "true" ? true : false,
+                        })
+                      }
+                      required
+                    >
+                      <option value="true">Sim</option>
+                      <option value="false">Não</option>
+                    </Select>
+                  </div>
+                  <div className="w-full flex justify-between">
+                    <Button type="submit" color="success">
+                      Alterar
+                    </Button>
+
+                    <Button onClick={handleCloseUpdateModal}>Cancelar</Button>
+                  </div>
+                </div>
+              </form>
+            </Modal.Body>
+          </>
+        )}
       </Modal>
     </Wrapper>
   );
