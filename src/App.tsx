@@ -7,6 +7,7 @@ import UpdateUserForm from "./components/UpdateUser";
 import ListProducts from "./components/ListProducts";
 import Home from "./pages/Home";
 import ProductDescription from "./pages/ProductDescription";
+import UserHome from "./pages/UserHome";
 
 export default function App() {
   const redirectToListUsers = () => {
@@ -44,6 +45,7 @@ export default function App() {
         <Route path="/listProducts" element={<ListProducts />} />
         <Route path="/home" element={<Home />} />
         <Route path="/description/:productId" element={<ProductDescription />} />
+        <Route path="/user/home" element={<UserHome />} />
       </Routes>
     </Router>
   );
