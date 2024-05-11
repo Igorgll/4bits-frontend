@@ -3,8 +3,8 @@ import { useState } from "react";
 import { BiCart } from "react-icons/bi";
 import Login from "./Login";
 import SignUp from "./SignUp";
-
-export default function Navbar() {
+import CartSlideOver from "./ShoppingCart";
+export default function Navbar({ toggleCart }) {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
 
@@ -18,9 +18,10 @@ export default function Navbar() {
           <div className="flex items-center gap-4">
             <Button onClick={() => setShowSignUpModal(true)}>Cadastre-se</Button>
             <Button onClick={() => setShowLoginModal(true)}>Login</Button>
-            <BiCart color={"white"} size={24} cursor={"pointer"} />
+            <Button onClick={toggleCart}>
+              <BiCart color={"white"} size={24} cursor={"pointer"} />
+            </Button>
           </div>
-          <Nav.Toggle />
         </div>
       </Nav>
       {/* render login modal */}
