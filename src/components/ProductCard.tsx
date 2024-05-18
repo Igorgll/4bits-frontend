@@ -1,7 +1,7 @@
 import { Card } from "flowbite-react";
 import StarIcon from "./StarIcon";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom"; // Importe Link do React Router
+import { Link } from "react-router-dom";
 
 interface ProductDTO {
   productId: number;
@@ -10,7 +10,7 @@ interface ProductDTO {
   description: string;
   rating: number;
   storage: number;
-  productImages: { imagePath: string }[];
+  productImages: { imageData: string }[];
   active: boolean;
 }
 
@@ -29,10 +29,14 @@ const ProductCard = () => {
           description: product.description,
           rating: product.rating,
           storage: product.storage,
-          productImages: product.productImages,
+          productImages: product.productImages.map((image: { imageData: string; }) => ({
+            ...image,
+            imageData: `data:image/jpeg;base64,${image.imageData}`
+          })),
           active: product.active,
         }));
         setProducts(convertedData);
+        console.log(convertedData);
       } else {
         console.error("Falha ao carregar os dados dos produtos, lista de produtos pode estar vazia.");
       }
@@ -52,7 +56,7 @@ const ProductCard = () => {
           key={product.productId}
           className="max-w-sm"
           imgAlt={product.productName}
-          imgSrc={product.productImages[0].imagePath}
+          imgSrc={product.productImages[0].imageData}
         >
           <Link to={`/description/${product.productId}`}> {/* Link para a página de detalhes do produto */}
             <h5 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
