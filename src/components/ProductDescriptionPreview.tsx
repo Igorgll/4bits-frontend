@@ -7,7 +7,7 @@ interface ProductDescriptionPreviewProps {
   price: number;
   description: string;
   rating: number;
-  productImages: { imagePath: string }[];
+  productImages: { imageData: string }[];
 }
 
 const ProductDescriptionPreview: React.FC<ProductDescriptionPreviewProps> = ({
@@ -15,7 +15,7 @@ const ProductDescriptionPreview: React.FC<ProductDescriptionPreviewProps> = ({
   price,
   description,
   rating,
-  productImages,
+  productImages = [],
 }) => {
   return (
     <div className="flex flex-col min-h-fit bg-[#111827]">
@@ -25,7 +25,7 @@ const ProductDescriptionPreview: React.FC<ProductDescriptionPreviewProps> = ({
             {productImages.map((image, index) => (
               <img
                 key={index}
-                src={image.imagePath}
+                src={image.imageData}
                 alt={`Product Image ${index + 1}`}
               />
             ))}

@@ -8,7 +8,7 @@ interface ProductPreviewWindowProps {
   price: number;
   description: string;
   rating: number;
-  productImages: { imagePath: string }[];
+  productImages: { imageData: string }[];
 }
 
 export default function ProductPreviewWindow({

@@ -18,7 +18,6 @@ import { BsEyeFill } from "react-icons/bs";
 
 import ProductPreviewWindow from "./ProductPreviewWindow";
 import { IoMdRefresh } from "react-icons/io";
-import ProductCard from "./ProductCard";
 
 interface ProductDTO {
   productId: number;
@@ -27,7 +26,7 @@ interface ProductDTO {
   description: string;
   rating: number;
   storage: number;
-  productImages: { imagePath: string }[];
+  productImages: { imageData: string }[];
   active: boolean;
 }
 
@@ -65,7 +64,10 @@ const ListProducts = () => {
           description: product.description,
           rating: product.rating,
           storage: product.storage,
-          productImages: product.productImages,
+          productImages: product.productImages.map((image: { imageData: string; }) => ({
+            ...image,
+            imageData: `data:image/jpeg;base64,${image.imageData}`
+          })),
           active: product.active,
         }));
         console.log(convertedData);
@@ -106,58 +108,34 @@ const ListProducts = () => {
     setOpenUpdateModal(false);
   };
 
-  const handleAddImage = () => {
-    setProductDTO({
-      ...productDTO,
-      productImages: [...productDTO.productImages, { imagePath: "" }],
-    });
-  };
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setProductDTO({ ...productDTO, productImages: filesArray });
+    }
+  };  
 
-  const handleImageChange = (index: number, imagePath: string) => {
-    const updatedImages = [...productDTO.productImages];
-    updatedImages[index] = { imagePath };
-    setProductDTO({ ...productDTO, productImages: updatedImages });
-  };
-
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
-  ): Promise<void> => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-      const {
-        productName,
-        price,
-        description,
-        rating,
-        storage,
-        productImages,
-      } = productDTO;
-
-      if (
-        !productName ||
-        !price ||
-        !description ||
-        !rating ||
-        !storage ||
-        !productImages.length
-      ) {
-        console.error("Todos os campos obrigatórios devem ser preenchidos");
-        return;
-      }
-
-      const newProduct = { ...productDTO };
-
-      const response = await fetch(
-        "http://localhost:8080/api/v1/products/createProduct",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(newProduct),
+      const formData = new FormData();
+      // Adiciona os dados do produto ao FormData
+      Object.entries(productDTO).forEach(([key, value]) => {
+        if (key === "productImages") {
+          // Adiciona cada imagem ao FormData separadamente
+          value.forEach((image: File, index: number) => {
+            formData.append("images", image);
+          });
+        } else {
+          formData.append(key, value.toString());
         }
-      );
+      });
+
+      const response = await fetch("http://localhost:8080/api/v1/products/createProduct", {
+        method: "POST",
+        body: formData,
+      });
 
       if (response.ok) {
         console.log("Produto cadastrado com sucesso");
@@ -247,6 +225,7 @@ const ListProducts = () => {
   };
 
   const handleSelectProduct = (product: ProductDTO) => {
+
     setSelectedProduct(product);
     console.log(product);
     setOpenProductPreviewWindow(true);
@@ -492,13 +471,13 @@ const ListProducts = () => {
                     <TextInput
                       id={`image_${index}`}
                       type="string"
-                      value={image.imagePath}
+                      value={image.imageData}
                       onChange={(e) => handleImageChange(index, e.target.value)}
                       required
                     />
                   </div>
                 ))}
-                <Button color="info" onClick={handleAddImage}>
+                <Button color="info">
                   Adicionar Imagem
                 </Button>
               </div>
@@ -636,7 +615,7 @@ const ListProducts = () => {
                         <TextInput
                           id={`image_${index}`}
                           type="string"
-                          value={productDTO.productImages[index]?.imagePath || image.imagePath}
+                          value={productDTO.productImages[index]?.imageData || image.imageData}
                           onChange={(e) =>
                             handleImageChange(index, e.target.value)
                           }
@@ -644,7 +623,7 @@ const ListProducts = () => {
                         />
                       </div>
                     ))}
-                    <Button color="info" onClick={handleAddImage}>
+                    <Button color="info">
                       Adicionar Imagem
                     </Button>
                   </div>
