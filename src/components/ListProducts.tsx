@@ -16,7 +16,6 @@ import { Button, Modal } from "flowbite-react";
 import SearchBar from "./SearchBar";
 import { BiPlus } from "react-icons/bi";
 import { BsEyeFill, BsTrash } from "react-icons/bs";
-
 import ProductPreviewWindow from "./ProductPreviewWindow";
 import { IoMdRefresh } from "react-icons/io";
 
