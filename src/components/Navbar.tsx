@@ -31,7 +31,6 @@ export default function Navbar() {
               onClick={() => setShowCartDrawer(true)}
             />
           </div>
-          <Nav.Toggle />
         </div>
       </Nav>
       {/* render login modal */}
