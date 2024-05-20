@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Wrapper from "./Wrapper";
 import {
+  FileInput,
   Label,
   Select,
   Table,
@@ -14,10 +15,14 @@ import {
 import { Button, Modal } from "flowbite-react";
 import SearchBar from "./SearchBar";
 import { BiPlus } from "react-icons/bi";
-import { BsEyeFill } from "react-icons/bs";
-
+import { BsEyeFill, BsTrash } from "react-icons/bs";
 import ProductPreviewWindow from "./ProductPreviewWindow";
 import { IoMdRefresh } from "react-icons/io";
+
+interface ProductImage {
+  file: File;
+  imageData: string;
+}
 
 interface ProductDTO {
   productId: number;
@@ -26,7 +31,7 @@ interface ProductDTO {
   description: string;
   rating: number;
   storage: number;
-  productImages: { imageData: string }[];
+  productImages: ProductImage[];
   active: boolean;
 }
 
@@ -64,10 +69,12 @@ const ListProducts = () => {
           description: product.description,
           rating: product.rating,
           storage: product.storage,
-          productImages: product.productImages.map((image: { imageData: string; }) => ({
-            ...image,
-            imageData: `data:image/jpeg;base64,${image.imageData}`
-          })),
+          productImages: product.productImages.map(
+            (image: { imageData: string }) => ({
+              ...image,
+              imageData: `data:image/jpeg;base64,${image.imageData}`,
+            })
+          ),
           active: product.active,
         }));
         console.log(convertedData);
@@ -110,32 +117,43 @@ const ListProducts = () => {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const filesArray = Array.from(e.target.files);
-      setProductDTO({ ...productDTO, productImages: filesArray });
+      const filesArray = Array.from(e.target.files).map((file) => ({
+        file,
+        imageData: URL.createObjectURL(file),
+      }));
+      const newProductImages = [...productDTO.productImages, ...filesArray];
+      setProductDTO({ ...productDTO, productImages: newProductImages });
     }
-  };  
+  };
+
+  const handleRemoveImage = (index: number) => {
+    const newProductImages = productDTO.productImages.filter(
+      (_, i) => i !== index
+    );
+    setProductDTO({ ...productDTO, productImages: newProductImages });
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
       const formData = new FormData();
-      // Adiciona os dados do produto ao FormData
+      productDTO.productImages.forEach((image, index) => {
+        formData.append("images", image.file);
+      });
       Object.entries(productDTO).forEach(([key, value]) => {
-        if (key === "productImages") {
-          // Adiciona cada imagem ao FormData separadamente
-          value.forEach((image: File, index: number) => {
-            formData.append("images", image);
-          });
-        } else {
+        if (key !== "productImages") {
           formData.append(key, value.toString());
         }
       });
 
-      const response = await fetch("http://localhost:8080/api/v1/products/createProduct", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "http://localhost:8080/api/v1/products/createProduct",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (response.ok) {
         console.log("Produto cadastrado com sucesso");
@@ -150,27 +168,38 @@ const ListProducts = () => {
   };
 
   const handleUpdateSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
-    e.preventDefault();
-  
-    try {
-      const response = await fetch(`http://localhost:8080/api/v1/products/updateProduct/${selectedProduct.productId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(productDTO),
-      });
-  
-      if (response.ok) {
-        console.log("Produto atualizado com sucesso");
-        handleCloseUpdateModal();
-        fetchProducts();
-      } else {
-        console.error("Falha ao atualizar o produto");
+      e.preventDefault();
+
+      try {
+          const formData = new FormData();
+          productDTO.productImages.forEach((image, index) => {
+              formData.append("images", image.file);
+          });
+          formData.append("productName", productDTO.productName);
+          formData.append("price", productDTO.price.toString());
+          formData.append("description", productDTO.description);
+          formData.append("rating", productDTO.rating.toString());
+          formData.append("storage", productDTO.storage.toString());
+          formData.append("active", productDTO.active.toString());
+
+          const response = await fetch(
+              `http://localhost:8080/api/v1/products/updateProduct/${selectedProduct.productId}`,
+              {
+                  method: "PUT",
+                  body: formData,
+              }
+          );
+
+          if (response.ok) {
+              console.log("Produto atualizado com sucesso");
+              handleCloseUpdateModal();
+              fetchProducts();
+          } else {
+              console.error("Falha ao atualizar o produto");
+          }
+      } catch (error) {
+          console.error("Erro ao atualizar o produto:", error);
       }
-    } catch (error) {
-      console.error("Erro ao atualizar o produto:", error);
-    }
   };
 
   const handleChangeProductStatus = async (
@@ -225,7 +254,6 @@ const ListProducts = () => {
   };
 
   const handleSelectProduct = (product: ProductDTO) => {
-
     setSelectedProduct(product);
     console.log(product);
     setOpenProductPreviewWindow(true);
@@ -464,22 +492,16 @@ const ListProducts = () => {
               </div>
               <div>
                 <div className="mb-2 block">
-                  <Label value="Links das Imagens" />
+                  <Label value="Imagens" />
                 </div>
-                {productDTO.productImages.map((image, index) => (
-                  <div key={index} className="mb-2">
-                    <TextInput
-                      id={`image_${index}`}
-                      type="string"
-                      value={image.imageData}
-                      onChange={(e) => handleImageChange(index, e.target.value)}
-                      required
-                    />
-                  </div>
-                ))}
-                <Button color="info">
-                  Adicionar Imagem
-                </Button>
+                <div className="flex-1 h-full">
+                  <FileInput
+                    id="multiple-file-upload"
+                    multiple
+                    helperText="Selecione apenas imagens com extensão JPG, JPEG e PNG"
+                    onChange={handleImageChange}
+                  />
+                </div>
               </div>
               <div>
                 <div className="mb-2 block">
@@ -529,7 +551,9 @@ const ListProducts = () => {
                     </div>
                     <TextInput
                       id="productName"
-                      value={productDTO.productName || selectedProduct.productName}
+                      value={
+                        productDTO.productName || selectedProduct.productName
+                      }
                       onChange={(e) =>
                         setProductDTO({
                           ...productDTO,
@@ -562,7 +586,9 @@ const ListProducts = () => {
                     </div>
                     <TextInput
                       id="description"
-                      value={productDTO.description || selectedProduct.description}
+                      value={
+                        productDTO.description || selectedProduct.description
+                      }
                       onChange={(e) =>
                         setProductDTO({
                           ...productDTO,
@@ -610,22 +636,30 @@ const ListProducts = () => {
                     <div className="mb-2 block">
                       <Label value="Links das Imagens" />
                     </div>
-                    {selectedProduct.productImages.map((image, index) => (
-                      <div key={index} className="mb-2">
-                        <TextInput
-                          id={`image_${index}`}
-                          type="string"
-                          value={productDTO.productImages[index]?.imageData || image.imageData}
-                          onChange={(e) =>
-                            handleImageChange(index, e.target.value)
-                          }
-                          required
+                    <FileInput
+                      id="multiple-file-upload"
+                      multiple
+                      helperText="Selecione apenas imagens com extensão JPG, JPEG e PNG"
+                      onChange={handleImageChange}
+                    />
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {productDTO.productImages.map((image, index) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={image.imageData}
+                          alt={`Produto ${index + 1}`}
+                          className="w-20 h-20 object-cover"
                         />
+                        <button
+                          type="button"
+                          className="absolute top-0 right-0 p-1 bg-red-600 text-white rounded-full"
+                          onClick={() => handleRemoveImage(index)}
+                        >
+                          <BsTrash size={16} />
+                        </button>
                       </div>
                     ))}
-                    <Button color="info">
-                      Adicionar Imagem
-                    </Button>
                   </div>
                   <div>
                     <div className="mb-2 block">

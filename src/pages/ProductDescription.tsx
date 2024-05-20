@@ -6,6 +6,11 @@ import StarIcon from "../components/StarIcon";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
+interface ProductImage {
+  file: File | null;
+  imageData: string;
+}
+
 interface ProductDTO {
   productId: number;
   productName: string;
@@ -13,7 +18,7 @@ interface ProductDTO {
   description: string;
   rating: number;
   storage: number;
-  productImages: { imagePath: string }[];
+  productImages: ProductImage[];
   active: boolean;
 }
 
@@ -30,7 +35,19 @@ export default function ProductDescription() {
         if (response.ok) {
           const data = await response.json();
           console.log(data);
-          setProduct(data);
+
+          // Convert the image data to base64 format if not already done
+          const updatedData: ProductDTO = {
+            ...data,
+            productImages: data.productImages.map((image: ProductImage) => ({
+              ...image,
+              imageData: image.imageData.startsWith("data:")
+                ? image.imageData
+                : `data:image/jpeg;base64,${image.imageData}`,
+            })),
+          };
+
+          setProduct(updatedData);
         } else {
           console.error("Erro ao buscar detalhes do produto:", response.status);
         }
@@ -57,8 +74,9 @@ export default function ProductDescription() {
                 product.productImages.map((image, index) => (
                   <img
                     key={index}
-                    src={image.imagePath}
+                    src={image.imageData}
                     alt={`Product Image ${index + 1}`}
+                    className="w-full h-full object-cover"
                   />
                 ))}
             </FlowbiteCarousel>
