@@ -1,5 +1,7 @@
 import { Button, Label, Modal, TextInput } from "flowbite-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { useAuth } from "../components/AuthContext";
+import { Spinner } from "flowbite-react"; // Add spinner import
 
 interface LoginProps {
   onClose: () => void;
@@ -7,6 +9,48 @@ interface LoginProps {
 
 export default function Login({ onClose }: LoginProps) {
   const emailInputRef = useRef<HTMLInputElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false); // Add loading state
+  const { login } = useAuth();
+
+  const handleLogin = async () => {
+    const email = emailInputRef.current?.value;
+    const password = passwordInputRef.current?.value;
+
+    if (!email || !password) {
+      setError("Email and password are required");
+      return;
+    }
+
+    setLoading(true); // Start loading
+    try {
+      const response = await fetch("http://localhost:8080/api/v1/users/clientLogin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha no login");
+      }
+
+      const data = await response.text();
+      const sessionToken = response.headers.get("X-Auth-Token");
+      if (sessionToken) {
+        localStorage.setItem("sessionToken", sessionToken);
+      }
+      setError(null);
+      login(email); // Pass email to login function
+      onClose();
+    } catch (error) {
+      setError("Falha no login. Verifique seu login.");
+    } finally {
+      setLoading(false); // Stop loading
+    }
+  };
 
   return (
     <Modal
@@ -32,26 +76,36 @@ export default function Login({ onClose }: LoginProps) {
               ref={emailInputRef}
               placeholder="email@exemplo.com"
               required
+              disabled={loading} // Disable input when loading
             />
           </div>
           <div>
             <div className="mb-2 block">
               <Label htmlFor="password" value="Sua senha" />
             </div>
-            <TextInput id="password" type="password" required />
+            <TextInput
+              id="password"
+              type="password"
+              ref={passwordInputRef}
+              required
+              disabled={loading} // Disable input when loading
+            />
           </div>
+          {error && <div className="text-red-500">{error}</div>}
           <div className="w-full">
-            <Button>Efetuar login</Button>
+            <Button onClick={handleLogin} disabled={loading}>
+              {loading ? <Spinner size="sm" light /> : "Efetuar login"}
+            </Button>
           </div>
-            <div className="flex justify-between text-sm font-medium text-gray-500 dark:text-gray-300">
-              Não possui uma conta?&nbsp;
-              <a
-                href="#"
-                className="text-cyan-700 hover:underline dark:text-cyan-500"
-              >
-                Cadastre-se
-              </a>
-            </div>
+          <div className="flex justify-between text-sm font-medium text-gray-500 dark:text-gray-300">
+            Não possui uma conta?&nbsp;
+            <a
+              href="#"
+              className="text-cyan-700 hover:underline dark:text-cyan-500"
+            >
+              Cadastre-se
+            </a>
+          </div>
         </div>
       </Modal.Body>
     </Modal>

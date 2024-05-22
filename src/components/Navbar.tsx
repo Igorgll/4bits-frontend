@@ -4,11 +4,28 @@ import { BiCart } from "react-icons/bi";
 import Login from "./Login";
 import SignUp from "./SignUp";
 import { IoMdClose } from "react-icons/io";
+import { useAuth } from "./AuthContext";
+import { logoutClient } from "./api";
+import { Spinner } from "flowbite-react";
 
 export default function Navbar() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showCartDrawer, setShowCartDrawer] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const { isAuthenticated, userEmail, logout } = useAuth();
+
+  const handleLogout = async () => {
+    setLoading(true);
+    try {
+      await logoutClient();
+      logout();
+    } catch (error) {
+      console.error('Logout failed', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -22,8 +39,21 @@ export default function Navbar() {
         </Nav.Brand>
         <div className="flex md:order-2">
           <div className="flex items-center gap-4">
-            <Button onClick={() => setShowSignUpModal(true)}>Cadastre-se</Button>
-            <Button onClick={() => setShowLoginModal(true)}>Login</Button>
+            {!isAuthenticated ? (
+              <>
+                <Button onClick={() => setShowSignUpModal(true)}>
+                  Cadastre-se
+                </Button>
+                <Button onClick={() => setShowLoginModal(true)}>Login</Button>
+              </>
+            ) : (
+              <>
+                <span className="text-white">Bem vindo(a), {userEmail}</span>
+                <Button onClick={handleLogout} disabled={loading}>
+                  {loading ? <Spinner size="sm" light /> : "Sair"}
+                </Button>
+              </>
+            )}
             <BiCart
               color={"white"}
               size={24}
@@ -48,7 +78,7 @@ export default function Navbar() {
         <div className="p-4 flex justify-between items-center border-b text-white">
           <h2 className="text-lg font-bold">Carrinho</h2>
           <button onClick={() => setShowCartDrawer(false)}>
-           <IoMdClose />
+            <IoMdClose />
           </button>
         </div>
         <div className="p-4 text-white">
