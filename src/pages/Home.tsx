@@ -1,11 +1,9 @@
 import ProductCard from "../components/ProductCard";
 import Footer from "../components/Footer";
-import Navbar from "../components/Navbar";
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
       <div className="flex-grow bg-[#111827]">
         <div className="container mx-auto py-20">
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
