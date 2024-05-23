@@ -1,24 +1,37 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
-interface AuthContextProps {
+interface AuthContextType {
   isAuthenticated: boolean;
   userEmail: string | null;
-  login: (email: string) => void;
+  login: (email: string, token: string) => void;
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextProps | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider: React.FC = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
-  const login = (email: string) => {
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const email = localStorage.getItem("userEmail");
+    if (token && email) {
+      setIsAuthenticated(true);
+      setUserEmail(email);
+    }
+  }, []);
+
+  const login = (email: string, token: string) => {
+    localStorage.setItem("authToken", token);
+    localStorage.setItem("userEmail", email);
     setIsAuthenticated(true);
     setUserEmail(email);
   };
 
   const logout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userEmail");
     setIsAuthenticated(false);
     setUserEmail(null);
   };
@@ -30,10 +43,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useAuth = (): AuthContextProps => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

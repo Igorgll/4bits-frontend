@@ -24,6 +24,43 @@ export default function Navbar() {
   const [loading, setLoading] = useState<boolean>(false);
   const { isAuthenticated, userEmail, logout } = useAuth();
 
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/v1/cart/viewCart/1'); // Ajuste o endpoint conforme necessário
+        if (response.ok) {
+          const data = await response.json();
+          if (data && Array.isArray(data.items)) {
+            const cartItems = data.items.map((item: any) => ({
+              productId: item.product.productId,
+              productName: item.product.productName,
+              price: item.product.price,
+              quantity: item.quantity,
+            }));
+            setCartItems(cartItems);
+            saveCartToLocalStorage(cartItems);
+          } else {
+            console.error("A resposta do servidor não contém um array de itens:", data);
+            setCartItems([]);
+            saveCartToLocalStorage([]);
+          }
+        } else {
+          console.error("Erro ao buscar itens do carrinho:", response.status);
+          setCartItems([]);
+          saveCartToLocalStorage([]);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar itens do carrinho:", error);
+        setCartItems([]);
+        saveCartToLocalStorage([]);
+      }
+    };
+
+    if (showCartDrawer) {
+      fetchCartItems(); // Carrega os itens do carrinho quando o drawer é aberto
+    }
+  }, [showCartDrawer]);
+
   const handleLogout = async () => {
     setLoading(true);
     try {
@@ -33,37 +70,6 @@ export default function Navbar() {
       console.error('Logout failed', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchCartItems = async () => {
-    try {
-      const response = await fetch('http://localhost:8080/api/v1/cart/viewCart/1'); // Ajuste o endpoint conforme necessário
-      if (response.ok) {
-        const data = await response.json();
-        if (data && Array.isArray(data.items)) {
-          const cartItems = data.items.map((item: any) => ({
-            productId: item.product.productId,
-            productName: item.product.productName,
-            price: item.product.price,
-            quantity: item.quantity,
-          }));
-          setCartItems(cartItems);
-          saveCartToLocalStorage(cartItems);
-        } else {
-          console.error("A resposta do servidor não contém um array de itens:", data);
-          setCartItems([]);
-          saveCartToLocalStorage([]);
-        }
-      } else {
-        console.error("Erro ao buscar itens do carrinho:", response.status);
-        setCartItems([]);
-        saveCartToLocalStorage([]);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar itens do carrinho:", error);
-      setCartItems([]);
-      saveCartToLocalStorage([]);
     }
   };
 
@@ -100,12 +106,6 @@ export default function Navbar() {
       console.error("Erro ao remover item do carrinho:", error);
     }
   };
-
-  useEffect(() => {
-    if (showCartDrawer) {
-      fetchCartItems(); // Carrega os itens do carrinho quando o drawer é aberto
-    }
-  }, [showCartDrawer]);
 
   const cartTotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
