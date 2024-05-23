@@ -7,6 +7,7 @@ import SignUp from "./SignUp";
 import { useAuth } from "./AuthContext";
 import { logoutClient } from "./api";
 import { addItemToCart } from "../components/apiCart";
+import { Link } from "react-router-dom";
 
 interface CartItem {
   productId: number;
@@ -129,7 +130,9 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <span className="text-white">Bem vindo(a), {userEmail}</span>
+                <Link to="/user/home">
+                  <span className="text-white">Bem vindo(a), {userEmail}</span>
+                </Link>
                 <Button onClick={handleLogout} disabled={loading}>
                   {loading ? <Spinner size="sm" light /> : "Sair"}
                 </Button>

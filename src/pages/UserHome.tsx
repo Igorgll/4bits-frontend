@@ -9,15 +9,56 @@ import {
   TextInput,
 } from "flowbite-react";
 import Footer from "../components/Footer";
-import Navbar from "../components/Navbar";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { BiUserCircle } from "react-icons/bi";
+import { useAuth } from "../components/AuthContext";
+
+interface User {
+  userId: number;
+  email: string;
+  cpf: string;
+  nome: string;
+  userAddress: Address[];
+  billingAddress: Address;
+  password: string;
+}
+
+interface Address {
+  billingAdressId?: number;
+  cep: string;
+  logradouro: string;
+  numero: string;
+  complemento: string;
+  bairro: string;
+  localidade: string;
+  uf: string;
+}
 
 export default function UserHome() {
   const tabsRef = useRef<TabsRef>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [openModal, setOpenModal] = useState(false);
   const [openAdressModal, setOpenAdressModal] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const { userEmail } = useAuth(); // Obtendo o e-mail do usuário autenticado
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/v1/users/email/${userEmail}`);
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data);
+        } else {
+          console.error("Erro ao buscar dados do usuário:", response.status);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar dados do usuário:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [userEmail]);
 
   const handleOpenModal = () => {
     setOpenModal(true);
@@ -37,7 +78,6 @@ export default function UserHome() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
       <div className="min-h-screen py-6 px-6 bg-[#111827]">
         <div className="overflow-x-auto">
           <Tabs
@@ -47,9 +87,9 @@ export default function UserHome() {
           >
             <Tabs.Item active title="Informações básicas" icon={BiUserCircle}>
               <List className="mb-4">
-                <List.Item>Nome:</List.Item>
-                <List.Item>Data de Nascimento:</List.Item>
-                <List.Item>Genêro:</List.Item>
+                <List.Item>Nome: {user?.nome}</List.Item>
+                <List.Item>Email: {user?.email}</List.Item>
+                <List.Item>CPF: {user?.cpf}</List.Item>
               </List>
               <Button onClick={handleOpenModal} color="info">
                 Alterar
@@ -57,10 +97,13 @@ export default function UserHome() {
             </Tabs.Item>
             <Tabs.Item title="Endereços" icon={BiUserCircle}>
               <List className="mb-4">
-                <List.Item>CEP:</List.Item>
-                <List.Item>Logradouro:</List.Item>
-                <List.Item>Número:</List.Item>
-                <List.Item>UF:</List.Item>
+                <List.Item>CEP: {user?.billingAddress?.cep}</List.Item>
+                <List.Item>Logradouro: {user?.billingAddress?.logradouro}</List.Item>
+                <List.Item>Número: {user?.billingAddress?.numero}</List.Item>
+                <List.Item>Complemento: {user?.billingAddress?.complemento}</List.Item>
+                <List.Item>Bairro: {user?.billingAddress?.bairro}</List.Item>
+                <List.Item>Localidade: {user?.billingAddress?.localidade}</List.Item>
+                <List.Item>UF: {user?.billingAddress?.uf}</List.Item>
               </List>
               <Button onClick={handleAdressOpenModal} color="success">
                 Adicionar novo endereço
@@ -81,21 +124,21 @@ export default function UserHome() {
             </h3>
             <div>
               <div className="mb-2 block">
-                <Label htmlFor="name" value="Nome" />
+                <Label htmlFor="nome" value="Nome" />
               </div>
-              <TextInput id="name" required />
+              <TextInput id="nome" defaultValue={user?.nome} required />
             </div>
             <div>
               <div className="mb-2 block">
-                <Label htmlFor="birthDate" value="Data de Nascimento (dd/mm/aaaa)" />
+                <Label htmlFor="email" value="Email" />
               </div>
-              <TextInput id="birthDate" required />
+              <TextInput id="email" defaultValue={user?.email} required />
             </div>
             <div>
               <div className="mb-2 block">
-                <Label htmlFor="gender" value="Genero" />
+                <Label htmlFor="cpf" value="CPF" />
               </div>
-              <TextInput id="gender" required />
+              <TextInput id="cpf" defaultValue={user?.cpf} required />
             </div>
             <div>
               <div className="mb-2 block">
@@ -129,33 +172,33 @@ export default function UserHome() {
             </h3>
             <div>
               <div className="mb-2 block">
-                <Label htmlFor="CEP" value="CEP" />
+                <Label htmlFor="cep" value="CEP" />
               </div>
               <TextInput className="w-44" id="cep" required />
             </div>
             <div className="flex gap-6">
               <div>
                 <div className="mb-2 block">
-                  <Label htmlFor="Street Name" value="Logradouro" />
+                  <Label htmlFor="logradouro" value="Logradouro" />
                 </div>
                 <TextInput
                   className="w-96"
-                  id="street"
+                  id="logradouro"
                   type="string"
                   required
                 />
               </div>
               <div>
                 <div className="mb-2 block">
-                  <Label htmlFor="House number" value="Número" />
+                  <Label htmlFor="numero" value="Número" />
                 </div>
-                <TextInput id="street" type="string" required />
+                <TextInput id="numero" type="string" required />
               </div>
             </div>
             <div className="flex gap-6">
               <div>
                 <div className="mb-2 block">
-                  <Label htmlFor="Complemento" value="Complemento" />
+                  <Label htmlFor="complemento" value="Complemento" />
                 </div>
                 <TextInput
                   className="w-96"
@@ -166,7 +209,7 @@ export default function UserHome() {
               </div>
               <div>
                 <div className="mb-2 block">
-                  <Label htmlFor="Bairro" value="Bairro" />
+                  <Label htmlFor="bairro" value="Bairro" />
                 </div>
                 <TextInput
                   className="w-96"
@@ -179,20 +222,20 @@ export default function UserHome() {
             <div className="flex gap-6">
               <div>
                 <div className="mb-2 block">
-                  <Label htmlFor="Cidade" value="Cidade" />
+                  <Label htmlFor="localidade" value="Cidade" />
                 </div>
                 <TextInput
                   className="w-96"
-                  id="cidade"
+                  id="localidade"
                   type="string"
                   required
                 />
               </div>
               <div>
                 <div className="mb-2 block">
-                  <Label htmlFor="UF" value="UF" />
+                  <Label htmlFor="uf" value="UF" />
                 </div>
-                <Select className="w-40" id="cidades" required>
+                <Select className="w-40" id="uf" required>
                   <option value="">Selecione uma UF</option>
                   <option value="AC">Acre</option>
                   <option value="AL">Alagoas</option>
@@ -225,10 +268,10 @@ export default function UserHome() {
               </div>
             </div>
             <div className="w-full flex justify-between">
-              <Button onClick={() => setOpenModal(false)} color="success">
+              <Button onClick={() => setOpenAdressModal(false)} color="success">
                 Adicionar
               </Button>
-              <Button onClick={() => setOpenModal(false)}>Cancelar</Button>
+              <Button onClick={() => setOpenAdressModal(false)}>Cancelar</Button>
             </div>
           </div>
         </Modal.Body>
