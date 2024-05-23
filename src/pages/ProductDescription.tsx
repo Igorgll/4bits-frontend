@@ -1,10 +1,9 @@
 import { BiCart } from "react-icons/bi";
 import Footer from "../components/Footer";
-import { Button, Carousel as FlowbiteCarousel } from "flowbite-react";
+import { Button, Carousel as FlowbiteCarousel, Modal, Spinner } from "flowbite-react";
 import StarIcon from "../components/StarIcon";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Modal, Spinner } from "flowbite-react";
 
 interface ProductImage {
   file: File | null;
@@ -30,17 +29,14 @@ export default function ProductDescription() {
     show: false,
     title: '',
     message: '',
-  }); 
+  });
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/v1/products/productId/${productId}`
-        );
+        const response = await fetch(`http://localhost:8080/api/v1/products/productId/${productId}`);
         if (response.ok) {
           const data = await response.json();
-          console.log(data);
 
           // Convert the image data to base64 format if not already done
           const updatedData: ProductDTO = {
