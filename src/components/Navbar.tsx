@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Navbar as Nav, Spinner } from "flowbite-react";
 import { BiCart } from "react-icons/bi";
 import { IoMdClose } from "react-icons/io";
-import Login from "./Login";
-import SignUp from "./SignUp";
+import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { logoutClient } from "./api";
 import { addItemToCart } from "../components/apiCart";
-import { Link } from "react-router-dom";
+import Login from "./Login";
+import SignUp from "./SignUp";
 
 interface CartItem {
   productId: number;
@@ -22,54 +22,15 @@ export default function Navbar() {
   const [showCartDrawer, setShowCartDrawer] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>(loadCartFromLocalStorage());
   const [loading, setLoading] = useState<boolean>(false);
-  const { isAuthenticated, userEmail, logout, userRole, login } = useAuth();
-  const [userName, setUserName] = useState<string | null>(localStorage.getItem("userName"));
-
-  useEffect(() => {
-    const fetchCartItems = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/api/v1/cart/viewCart/1');
-        if (response.ok) {
-          const data = await response.json();
-          if (data && Array.isArray(data.items)) {
-            const cartItems = data.items.map((item: any) => ({
-              productId: item.product.productId,
-              productName: item.product.productName,
-              price: item.product.price,
-              quantity: item.quantity,
-            }));
-            setCartItems(cartItems);
-            saveCartToLocalStorage(cartItems);
-          } else {
-            console.error("A resposta do servidor não contém um array de itens:", data);
-            setCartItems([]);
-            saveCartToLocalStorage([]);
-          }
-        } else {
-          console.error("Erro ao buscar itens do carrinho:", response.status);
-          setCartItems([]);
-          saveCartToLocalStorage([]);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar itens do carrinho:", error);
-        setCartItems([]);
-        saveCartToLocalStorage([]);
-      }
-    };
-
-    if (showCartDrawer) {
-      fetchCartItems(); // Carrega os itens do carrinho quando o drawer é aberto
-    }
-  }, [showCartDrawer]);
+  const { isAuthenticated, userEmail, userRole, userName, logout, login } = useAuth();
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     const email = localStorage.getItem("userEmail");
     const role = localStorage.getItem("userRole") as UserRole | null;
     const name = localStorage.getItem("userName");
-    if (token && email && role) {
-      login(email, token, role); // Revalida a sessão se necessário
-      setUserName(name);
+    if (token && email && role && name) {
+      login(email, token, role, name); // Revalida a sessão se necessário
     }
   }, [login]);
 
@@ -79,7 +40,6 @@ export default function Navbar() {
       await logoutClient();
       logout();
       localStorage.removeItem("userName");
-      setUserName(null);
     } catch (error) {
       console.error('Logout failed', error);
     } finally {

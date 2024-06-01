@@ -28,7 +28,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ redirectToListProducts }) => {
           "Content-Type": "application/json",
           "Authorization": `Basic ${credentials}`
         },
-        body: JSON.stringify({ email, password }) // Inclui o corpo da solicitação
+        body: JSON.stringify({ email, password })
       });
 
       const responseText = await response.text();
@@ -43,13 +43,30 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ redirectToListProducts }) => {
         return;
       }
 
+      const adminResponse = await fetch(`http://localhost:8080/api/v1/admins/email/${email}`, {
+        headers: {
+          "Authorization": `Basic ${credentials}`
+        }
+      });
+
+      if (!adminResponse.ok) {
+        setError("Falha ao obter detalhes do administrador.");
+        setLoading(false);
+        return;
+      }
+
+      const adminData = await adminResponse.json();
+      console.log("Admin Data:", adminData);
+
+      const adminName = adminData.name;
       localStorage.setItem("authToken", sessionToken);
       localStorage.setItem("userEmail", email);
-      localStorage.setItem("userRole", "ROLE_ADMIN"); // Assumindo que todos os logins bem-sucedidos são de administradores
+      localStorage.setItem("userRole", "ROLE_ADMIN");
+      localStorage.setItem("userName", adminName);
       login(email, sessionToken, "ROLE_ADMIN");
       setError(null);
       setRedirect(true);
-      
+
     } catch (error) {
       console.error("Erro ao processar a solicitação:", error);
       setError("Erro ao processar a solicitação. Tente novamente.");
