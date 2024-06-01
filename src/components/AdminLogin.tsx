@@ -1,43 +1,65 @@
 import React, { useState } from "react";
 import Wrapper from "./Wrapper";
 import { Navigate } from "react-router";
+import { Spinner } from "flowbite-react";
+import { useAuth } from "./AuthContext";
 
-interface LoginFormProps {
-  redirectToListUsers: () => void; // Função para redirecionar para o login
+interface AdminLoginProps {
+  redirectToListProducts: () => void;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ redirectToListUsers }) => {
+const AdminLogin: React.FC<AdminLoginProps> = ({ redirectToListProducts }) => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-
-  const [redirect, setRedirect] = useState<boolean>(false); // State para controlar o redirecionamento
+  const [redirect, setRedirect] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    setLoading(true);
     try {
-      const response = await fetch("http://localhost:8080/api/v1/users/login", {
+      const credentials = btoa(`${email}:${password}`);
+      const response = await fetch("http://localhost:8080/api/v1/admins/login", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Basic ${credentials}`
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }) // Inclui o corpo da solicitação
       });
 
-      if (response.ok) {
-        console.log("Usuário autenticado com sucesso!");
-        redirectToListUsers();
-        setRedirect(true);
-      } else {
-        console.error("Falha ao autenticar usuário");
+      const responseText = await response.text();
+      console.log("Response Text:", responseText);
+
+      const sessionToken = response.headers.get("X-Auth-Token");
+      console.log("Session Token:", sessionToken);
+
+      if (!response.ok || !sessionToken) {
+        setError("Falha ao autenticar usuário. Verifique suas credenciais.");
+        setLoading(false);
+        return;
       }
+
+      localStorage.setItem("authToken", sessionToken);
+      localStorage.setItem("userEmail", email);
+      localStorage.setItem("userRole", "ROLE_ADMIN"); // Assumindo que todos os logins bem-sucedidos são de administradores
+      login(email, sessionToken, "ROLE_ADMIN");
+      setError(null);
+      setRedirect(true);
+      
     } catch (error) {
-      console.error("Erro ao autenticar usuário:", error);
+      console.error("Erro ao processar a solicitação:", error);
+      setError("Erro ao processar a solicitação. Tente novamente.");
+    } finally {
+      setLoading(false);
     }
   };
 
   if (redirect) {
-    return <Navigate to="/home" />;
+    return <Navigate to="/listProducts" />;
   }
 
   return (
@@ -53,6 +75,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ redirectToListUsers }) => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
             />
           </div>
           <div className="mb-5">
@@ -63,13 +86,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ redirectToListUsers }) => {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
             />
           </div>
+          {error && <div className="text-red-500">{error}</div>}
           <button
             type="submit"
             className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            disabled={loading}
           >
-            Acessar
+            {loading ? <Spinner size="sm" light /> : "Acessar"}
           </button>
         </form>
       </div>
@@ -77,4 +103,4 @@ const LoginForm: React.FC<LoginFormProps> = ({ redirectToListUsers }) => {
   );
 };
 
-export default LoginForm;
+export default AdminLogin;

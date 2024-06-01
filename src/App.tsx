@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import LoginForm from "./components/LoginForm";
 import ListUsers from "./components/ListUsers";
 import Options from "./components/Options";
 import SignUpForm from "./components/SignUpForm";
@@ -10,10 +9,12 @@ import ProductDescription from "./pages/ProductDescription";
 import UserHome from "./pages/UserHome";
 import Navbar from "./components/Navbar";
 import { AuthProvider } from "./components/AuthContext";
+import AdminLogin from "./components/AdminLogin";
+import Footer from "./components/Footer";
 
 export default function App() {
-  const redirectToListUsers = () => {
-    console.log("Redirecionar para a list de users");
+  const redirectToListProducts = () => {
+    console.log("Redirecionar para a list de products");
   };
 
   const redirectToLogin = () => {
@@ -26,12 +27,8 @@ export default function App() {
         <Navbar />
         <Routes>
           <Route
-            path="/"
-            element={<LoginForm redirectToListUsers={redirectToListUsers} />}
-          />
-          <Route
-            path="/login"
-            element={<LoginForm redirectToListUsers={redirectToListUsers} />}
+            path="/admin/login"
+            element={<AdminLogin redirectToListProducts={redirectToListProducts} />}
           />
           <Route
             path="/listUsers" 
@@ -51,6 +48,7 @@ export default function App() {
           <Route path="/description/:productId" element={<ProductDescription />} />
           <Route path="/user/home" element={<UserHome />} />
         </Routes>
+        <Footer />
       </Router>
     </AuthProvider>
   );

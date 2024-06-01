@@ -22,12 +22,13 @@ export default function Navbar() {
   const [showCartDrawer, setShowCartDrawer] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>(loadCartFromLocalStorage());
   const [loading, setLoading] = useState<boolean>(false);
-  const { isAuthenticated, userEmail, logout } = useAuth();
+  const { isAuthenticated, userEmail, logout, userRole, login } = useAuth();
+  const [userName, setUserName] = useState<string | null>(localStorage.getItem("userName"));
 
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/v1/cart/viewCart/1'); // Ajuste o endpoint conforme necessário
+        const response = await fetch('http://localhost:8080/api/v1/cart/viewCart/1');
         if (response.ok) {
           const data = await response.json();
           if (data && Array.isArray(data.items)) {
@@ -61,11 +62,24 @@ export default function Navbar() {
     }
   }, [showCartDrawer]);
 
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const email = localStorage.getItem("userEmail");
+    const role = localStorage.getItem("userRole") as UserRole | null;
+    const name = localStorage.getItem("userName");
+    if (token && email && role) {
+      login(email, token, role); // Revalida a sessão se necessário
+      setUserName(name);
+    }
+  }, [login]);
+
   const handleLogout = async () => {
     setLoading(true);
     try {
       await logoutClient();
       logout();
+      localStorage.removeItem("userName");
+      setUserName(null);
     } catch (error) {
       console.error('Logout failed', error);
     } finally {
@@ -130,8 +144,8 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link to="/user/home">
-                  <span className="text-white">Bem vindo(a), {userEmail}</span>
+                <Link to={userRole === 'ROLE_ADMIN' ? "/admin/home" : "/user/home"}>
+                  <span className="text-white">Bem vindo(a), {userName}</span>
                 </Link>
                 <Button onClick={handleLogout} disabled={loading}>
                   {loading ? <Spinner size="sm" light /> : "Sair"}
@@ -146,7 +160,7 @@ export default function Navbar() {
                 onClick={() => setShowCartDrawer(true)}
               />
               {cartItems.length > 0 && (
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1 py-1 text-[6px] font-bold leading-none text-red-100 bg-red-600 rounded-full">
                   {cartItems.reduce((total, item) => total + item.quantity, 0)}
                 </span>
               )}
@@ -179,7 +193,7 @@ export default function Navbar() {
                   <p>Quantidade: {item.quantity}</p>
                   <p>Preço: R$ {item.price.toFixed(2)}</p>
                   <button
-                    onClick={() => removeItemFromCart(1, item.productId)} // Passar o ID correto do carrinho
+                    onClick={() => removeItemFromCart(1, item.productId)}
                     className="text-red-500"
                   >
                     Remover

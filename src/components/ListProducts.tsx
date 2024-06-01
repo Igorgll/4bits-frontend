@@ -59,7 +59,7 @@ const ListProducts = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/v1/products");
+      const response = await fetch("http://localhost:8080/api/v1/products/all");
       if (response.ok) {
         const data: any[] = await response.json();
         const convertedData: ProductDTO[] = data.map((product) => ({
