@@ -6,9 +6,10 @@ interface AuthContextType {
   isAuthenticated: boolean;
   userEmail: string | null;
   userRole: UserRole | null;
-  userName: string | null; // Adicione o userName aqui
-  login: (email: string, token: string, role: UserRole, name: string) => void; // Modifique a função login
+  userName: string | null;
+  login: (email: string, token: string, role: UserRole, name: string) => void;
   logout: () => void;
+  logoutAdmin: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,7 +25,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const email = localStorage.getItem("userEmail");
     const role = localStorage.getItem("userRole") as UserRole | null;
     const name = localStorage.getItem("userName");
-    if (token && email && role) {
+    if (token && email && role && name) {
       setIsAuthenticated(true);
       setUserEmail(email);
       setUserRole(role);
@@ -36,7 +37,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem("authToken", token);
     localStorage.setItem("userEmail", email);
     localStorage.setItem("userRole", role);
-    localStorage.setItem("userName", name); // Armazena o nome do usuário
+    localStorage.setItem("userName", name);
     setIsAuthenticated(true);
     setUserEmail(email);
     setUserRole(role);
@@ -54,8 +55,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserName(null);
   };
 
+  const logoutAdmin = async () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("userName");
+    setIsAuthenticated(false);
+    setUserEmail(null);
+    setUserRole(null);
+    setUserName(null);
+    try {
+      const response = await fetch('http://localhost:8080/api/v1/admins/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to logout admin');
+      }
+    } catch (error) {
+      console.error('Admin logout failed', error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, userEmail, userRole, userName, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, userEmail, userRole, userName, login, logout, logoutAdmin }}>
       {children}
     </AuthContext.Provider>
   );

@@ -17,7 +17,7 @@ interface User {
   userId: number;
   email: string;
   cpf: string;
-  nome: string;
+  name: string;
   userAddress: Address[];
   billingAddress: Address;
   password: string;
@@ -87,7 +87,7 @@ export default function UserHome() {
           >
             <Tabs.Item active title="Informações básicas" icon={BiUserCircle}>
               <List className="mb-4">
-                <List.Item>Nome: {user?.nome}</List.Item>
+                <List.Item>Nome: {user?.name}</List.Item>
                 <List.Item>Email: {user?.email}</List.Item>
                 <List.Item>CPF: {user?.cpf}</List.Item>
               </List>

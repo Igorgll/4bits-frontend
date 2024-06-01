@@ -11,14 +11,15 @@ import Navbar from "./components/Navbar";
 import { AuthProvider } from "./components/AuthContext";
 import AdminLogin from "./components/AdminLogin";
 import Footer from "./components/Footer";
+import PrivateRoute from "./components/PrivateRoute";
 
 export default function App() {
   const redirectToListProducts = () => {
-    console.log("Redirecionar para a list de products");
+    console.log("Redirecionar para a lista de produtos");
   };
 
   const redirectToLogin = () => {
-    console.log("Redirecionar para a list de users");
+    console.log("Redirecionar para a lista de usuários");
   };
 
   return (
@@ -32,19 +33,30 @@ export default function App() {
           />
           <Route
             path="/listUsers" 
-            element={<ListUsers />}
+            element={
+              <PrivateRoute allowedRoles={['ROLE_ADMIN', 'ROLE_ESTOQUISTA']}>
+                <ListUsers />
+              </PrivateRoute>
+            }
           />
           <Route path="/options" element={<Options />} />
           <Route
-            path="/createUser"
+            path="/admin/signup"
             element={<SignUpForm redirectToLogin={redirectToLogin} />}
           />
           <Route
             path="/updateUser"
             element={<UpdateUserForm redirectToLogin={redirectToLogin} />}
           />
-          <Route path="/listProducts" element={<ListProducts />} />
-          <Route path="/home" element={<Home />} />
+          <Route
+            path="/listProducts"
+            element={
+              <PrivateRoute allowedRoles={['ROLE_ADMIN', 'ROLE_ESTOQUISTA']}>
+                <ListProducts />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/" element={<Home />} />
           <Route path="/description/:productId" element={<ProductDescription />} />
           <Route path="/user/home" element={<UserHome />} />
         </Routes>

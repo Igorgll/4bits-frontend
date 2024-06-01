@@ -150,7 +150,6 @@ export default function ProductDescription() {
           </div>
         </div>
       </div>
-      <Footer />
 
       {/* Notification Modal */}
       <Modal

@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Button, Navbar as Nav, Spinner } from "flowbite-react";
 import { BiCart } from "react-icons/bi";
 import { IoMdClose } from "react-icons/io";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
-import { logoutClient } from "./api";
+import { logoutClient as logoutUserClient } from "./api";
 import { addItemToCart } from "../components/apiCart";
 import Login from "./Login";
 import SignUp from "./SignUp";
@@ -17,12 +17,13 @@ interface CartItem {
 }
 
 export default function Navbar() {
+  const location = useLocation();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showCartDrawer, setShowCartDrawer] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>(loadCartFromLocalStorage());
   const [loading, setLoading] = useState<boolean>(false);
-  const { isAuthenticated, userEmail, userRole, userName, logout, login } = useAuth();
+  const { isAuthenticated, userEmail, userRole, userName, logout, logoutAdmin, login } = useAuth();
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -37,7 +38,11 @@ export default function Navbar() {
   const handleLogout = async () => {
     setLoading(true);
     try {
-      await logoutClient();
+      if (userRole === 'ROLE_ADMIN') {
+        await logoutAdmin();
+      } else {
+        await logoutUserClient();
+      }
       logout();
       localStorage.removeItem("userName");
     } catch (error) {
@@ -83,10 +88,12 @@ export default function Navbar() {
 
   const cartTotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
+  const hideNavbarItems = location.pathname === "/admin/login";
+
   return (
     <>
       <Nav fluid>
-        <Nav.Brand href="/home">
+        <Nav.Brand href="/">
           <img
             src="https://imgur.com/m1xs6LH.png"
             className="mr-3 h-6 sm:h-9"
@@ -94,38 +101,40 @@ export default function Navbar() {
           />
         </Nav.Brand>
         <div className="flex md:order-2">
-          <div className="flex items-center gap-4">
-            {!isAuthenticated ? (
-              <>
-                <Button onClick={() => setShowSignUpModal(true)}>
-                  Cadastre-se
-                </Button>
-                <Button onClick={() => setShowLoginModal(true)}>Login</Button>
-              </>
-            ) : (
-              <>
-                <Link to={userRole === 'ROLE_ADMIN' ? "/admin/home" : "/user/home"}>
-                  <span className="text-white">Bem vindo(a), {userName}</span>
-                </Link>
-                <Button onClick={handleLogout} disabled={loading}>
-                  {loading ? <Spinner size="sm" light /> : "Sair"}
-                </Button>
-              </>
-            )}
-            <div className="relative">
-              <BiCart
-                color={"white"}
-                size={24}
-                cursor={"pointer"}
-                onClick={() => setShowCartDrawer(true)}
-              />
-              {cartItems.length > 0 && (
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1 py-1 text-[6px] font-bold leading-none text-red-100 bg-red-600 rounded-full">
-                  {cartItems.reduce((total, item) => total + item.quantity, 0)}
-                </span>
+          {!hideNavbarItems && (
+            <div className="flex items-center gap-4">
+              {!isAuthenticated ? (
+                <>
+                  <Button onClick={() => setShowSignUpModal(true)}>
+                    Cadastre-se
+                  </Button>
+                  <Button onClick={() => setShowLoginModal(true)}>Login</Button>
+                </>
+              ) : (
+                <>
+                  <Link to={userRole === 'ROLE_ADMIN' ? "/admin/home" : "/user/home"}>
+                    <span className="text-white">Bem vindo(a), {userName}</span>
+                  </Link>
+                  <Button onClick={handleLogout} disabled={loading}>
+                    {loading ? <Spinner size="sm" light /> : "Sair"}
+                  </Button>
+                </>
               )}
+              <div className="relative">
+                <BiCart
+                  color={"white"}
+                  size={24}
+                  cursor={"pointer"}
+                  onClick={() => setShowCartDrawer(true)}
+                />
+                {cartItems.length > 0 && (
+                  <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1 py-1 text-[6px] font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                    {cartItems.reduce((total, item) => total + item.quantity, 0)}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </Nav>
       {showLoginModal && <Login onClose={() => setShowLoginModal(false)} />}
@@ -186,3 +195,22 @@ const loadCartFromLocalStorage = (): CartItem[] => {
   const savedCart = localStorage.getItem('cartItems');
   return savedCart ? JSON.parse(savedCart) : [];
 };
+
+const logoutClient = async (): Promise<void> => {
+  const token = localStorage.getItem('sessionToken');
+  const response = await fetch('http://localhost:8080/api/v1/users/clientLogout', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Auth-Token': token ? token : '',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to logout');
+  }
+
+  localStorage.removeItem('sessionToken');
+};
+
+export { logoutClient as logoutUserClient };

@@ -63,7 +63,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ redirectToListProducts }) => {
       localStorage.setItem("userEmail", email);
       localStorage.setItem("userRole", "ROLE_ADMIN");
       localStorage.setItem("userName", adminName);
-      login(email, sessionToken, "ROLE_ADMIN");
+      login(email, sessionToken, "ROLE_ADMIN", adminName);
       setError(null);
       setRedirect(true);
 
