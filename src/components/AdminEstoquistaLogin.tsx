@@ -4,11 +4,11 @@ import { Navigate } from "react-router";
 import { Spinner } from "flowbite-react";
 import { useAuth } from "./AuthContext";
 
-interface AdminLoginProps {
+interface AdminEstoquistaLoginProps {
   redirectToListProducts: () => void;
 }
 
-const AdminLogin: React.FC<AdminLoginProps> = ({ redirectToListProducts }) => {
+const AdminEstoquistaLogin: React.FC<AdminEstoquistaLoginProps> = ({ redirectToListProducts }) => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [redirect, setRedirect] = useState<boolean>(false);
@@ -22,7 +22,9 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ redirectToListProducts }) => {
     setLoading(true);
     try {
       const credentials = btoa(`${email}:${password}`);
-      const response = await fetch("http://localhost:8080/api/v1/admins/login", {
+      
+      // Tenta login como administrador
+      const adminResponse = await fetch("http://localhost:8080/api/v1/admins/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -31,41 +33,58 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ redirectToListProducts }) => {
         body: JSON.stringify({ email, password })
       });
 
-      const responseText = await response.text();
-      console.log("Response Text:", responseText);
+      const adminSessionToken = adminResponse.headers.get("X-Auth-Token");
 
-      const sessionToken = response.headers.get("X-Auth-Token");
-      console.log("Session Token:", sessionToken);
-
-      if (!response.ok || !sessionToken) {
-        setError("Falha ao autenticar usuário. Verifique suas credenciais.");
-        setLoading(false);
+      if (adminResponse.ok && adminSessionToken) {
+        const adminData = await (await fetch(`http://localhost:8080/api/v1/admins/email/${email}`, {
+          headers: {
+            "Authorization": `Basic ${credentials}`
+          }
+        })).json();
+        
+        const adminName = adminData.name;
+        localStorage.setItem("authToken", adminSessionToken);
+        localStorage.setItem("userEmail", email);
+        localStorage.setItem("userRole", "ROLE_ADMIN");
+        localStorage.setItem("userName", adminName);
+        login(email, adminSessionToken, "ROLE_ADMIN", adminName);
+        setError(null);
+        setRedirect(true);
         return;
       }
 
-      const adminResponse = await fetch(`http://localhost:8080/api/v1/admins/email/${email}`, {
+      // Se falhar como administrador, tenta login como estoquista
+      const estoquistaResponse = await fetch("http://localhost:8080/api/v1/estoquistas/login", {
+        method: "POST",
         headers: {
+          "Content-Type": "application/json",
           "Authorization": `Basic ${credentials}`
-        }
+        },
+        body: JSON.stringify({ email, password })
       });
 
-      if (!adminResponse.ok) {
-        setError("Falha ao obter detalhes do administrador.");
-        setLoading(false);
+      const estoquistaSessionToken = estoquistaResponse.headers.get("X-Auth-Token");
+
+      if (estoquistaResponse.ok && estoquistaSessionToken) {
+        const estoquistaData = await (await fetch(`http://localhost:8080/api/v1/estoquistas/email/${email}`, {
+          headers: {
+            "Authorization": `Basic ${credentials}`
+          }
+        })).json();
+
+        const estoquistaName = estoquistaData.name;
+        localStorage.setItem("authToken", estoquistaSessionToken);
+        localStorage.setItem("userEmail", email);
+        localStorage.setItem("userRole", "ROLE_ESTOQUISTA");
+        localStorage.setItem("userName", estoquistaName);
+        login(email, estoquistaSessionToken, "ROLE_ESTOQUISTA", estoquistaName);
+        setError(null);
+        setRedirect(true);
         return;
       }
 
-      const adminData = await adminResponse.json();
-      console.log("Admin Data:", adminData);
-
-      const adminName = adminData.name;
-      localStorage.setItem("authToken", sessionToken);
-      localStorage.setItem("userEmail", email);
-      localStorage.setItem("userRole", "ROLE_ADMIN");
-      localStorage.setItem("userName", adminName);
-      login(email, sessionToken, "ROLE_ADMIN", adminName);
-      setError(null);
-      setRedirect(true);
+      setError("Falha ao autenticar usuário. Verifique suas credenciais.");
+      setLoading(false);
 
     } catch (error) {
       console.error("Erro ao processar a solicitação:", error);
@@ -76,7 +95,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ redirectToListProducts }) => {
   };
 
   if (redirect) {
-    return <Navigate to="/listProducts" />;
+    return <Navigate to="/options" />;
   }
 
   return (
@@ -120,4 +139,4 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ redirectToListProducts }) => {
   );
 };
 
-export default AdminLogin;
+export default AdminEstoquistaLogin;

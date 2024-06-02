@@ -15,7 +15,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, allowedRoles }) =
     return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
 
-  if (!allowedRoles.includes(userRole)) {
+  if (!allowedRoles.includes(userRole!)) {
     return <Navigate to="/" replace />;
   }
 

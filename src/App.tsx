@@ -9,9 +9,10 @@ import ProductDescription from "./pages/ProductDescription";
 import UserHome from "./pages/UserHome";
 import Navbar from "./components/Navbar";
 import { AuthProvider } from "./components/AuthContext";
-import AdminLogin from "./components/AdminLogin";
+import AdminEstoquistaLogin from "./components/AdminEstoquistaLogin";
 import Footer from "./components/Footer";
 import PrivateRoute from "./components/PrivateRoute";
+import ListOrders from "./components/ListOrders";
 
 export default function App() {
   const redirectToListProducts = () => {
@@ -29,7 +30,7 @@ export default function App() {
         <Routes>
           <Route
             path="/admin/login"
-            element={<AdminLogin redirectToListProducts={redirectToListProducts} />}
+            element={<AdminEstoquistaLogin redirectToListProducts={redirectToListProducts} />}
           />
           <Route
             path="/listUsers" 
@@ -59,6 +60,15 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/description/:productId" element={<ProductDescription />} />
           <Route path="/user/home" element={<UserHome />} />
+          <Route path="/options" element={<Options />} />
+          <Route
+            path="/list/orders"
+            element={
+              <PrivateRoute allowedRoles={['ROLE_ESTOQUISTA']}>
+                <ListOrders />
+              </PrivateRoute>
+            }
+          />
         </Routes>
         <Footer />
       </Router>
