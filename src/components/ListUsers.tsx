@@ -39,7 +39,7 @@ const ListUsers = () => {
   const fetchUsers = async () => {
     try {
       const response = await fetch(
-        "http://localhost:8080/api/v1/users/listUsersBasicInfo"
+        "http://localhost:8080/api/v1/users"
       );
       if (response.ok) {
         const data: any[] = await response.json();

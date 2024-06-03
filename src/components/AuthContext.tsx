@@ -7,6 +7,7 @@ interface AuthContextType {
   userEmail: string | null;
   userRole: UserRole | null;
   userName: string | null;
+  authToken: string | null;
   login: (email: string, token: string, role: UserRole, name: string) => void;
   logout: () => void;
   logoutAdmin: () => void;
@@ -19,6 +20,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [authToken, setAuthToken] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -30,6 +32,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUserEmail(email);
       setUserRole(role);
       setUserName(name);
+      setAuthToken(token);
     }
   }, []);
 
@@ -42,6 +45,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserEmail(email);
     setUserRole(role);
     setUserName(name);
+    setAuthToken(token);
   };
 
   const logout = () => {
@@ -53,6 +57,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserEmail(null);
     setUserRole(null);
     setUserName(null);
+    setAuthToken(null);
   };
 
   const logoutAdmin = async () => {
@@ -64,6 +69,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserEmail(null);
     setUserRole(null);
     setUserName(null);
+    setAuthToken(null);
     try {
       const response = await fetch('http://localhost:8080/api/v1/admins/logout', {
         method: 'POST',
@@ -80,7 +86,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, userEmail, userRole, userName, login, logout, logoutAdmin }}>
+    <AuthContext.Provider value={{ isAuthenticated, userEmail, userRole, userName, authToken, login, logout, logoutAdmin }}>
       {children}
     </AuthContext.Provider>
   );
