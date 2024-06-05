@@ -59,7 +59,7 @@ const ListProducts = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/v1/products");
+      const response = await fetch("http://localhost:8080/api/v1/products/all");
       if (response.ok) {
         const data: any[] = await response.json();
         const convertedData: ProductDTO[] = data.map((product) => ({
@@ -347,7 +347,7 @@ const ListProducts = () => {
                   <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                     {product.productName}
                   </TableCell>
-                  <TableCell>{product.price}</TableCell>
+                  <TableCell>R$ {product.price}</TableCell>
                   <TableCell>
                     <p className="line-clamp-2 max-w-96">
                       {product.description}

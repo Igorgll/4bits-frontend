@@ -1,7 +1,7 @@
 import { Button, Label, Modal, TextInput } from "flowbite-react";
 import { useRef, useState } from "react";
 import { useAuth } from "../components/AuthContext";
-import { Spinner } from "flowbite-react"; // Add spinner import
+import { Spinner } from "flowbite-react";
 
 interface LoginProps {
   onClose: () => void;
@@ -11,7 +11,7 @@ export default function Login({ onClose }: LoginProps) {
   const emailInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false); // Add loading state
+  const [loading, setLoading] = useState<boolean>(false);
   const { login } = useAuth();
 
   const handleLogin = async () => {
@@ -19,11 +19,11 @@ export default function Login({ onClose }: LoginProps) {
     const password = passwordInputRef.current?.value;
 
     if (!email || !password) {
-      setError("Email and password are required");
+      setError("Email e senha são obrigatórios");
       return;
     }
 
-    setLoading(true); // Start loading
+    setLoading(true);
     try {
       const response = await fetch("http://localhost:8080/api/v1/users/clientLogin", {
         method: "POST",
@@ -37,18 +37,35 @@ export default function Login({ onClose }: LoginProps) {
         throw new Error("Falha no login");
       }
 
-      const data = await response.text();
       const sessionToken = response.headers.get("X-Auth-Token");
       if (sessionToken) {
         localStorage.setItem("sessionToken", sessionToken);
+
+        // Fetch user details
+        const userResponse = await fetch(`http://localhost:8080/api/v1/users/email/${email}`, {
+          headers: {
+            "Authorization": `Bearer ${sessionToken}`
+          }
+        });
+
+        if (!userResponse.ok) {
+          throw new Error("Falha ao obter detalhes do usuário");
+        }
+
+        const userData = await userResponse.json();
+        const userName = userData.name; // Assumindo que o nome do usuário está no atributo 'name'
+        localStorage.setItem("userName", userName); // Armazena o nome do usuário
+
+        setError(null);
+        login(email, sessionToken, "ROLE_USER", userName); // Atualiza o contexto de autenticação com o nome
+        onClose();
+      } else {
+        setError("Falha no login. Verifique seu login.");
       }
-      setError(null);
-      login(email); // Pass email to login function
-      onClose();
     } catch (error) {
       setError("Falha no login. Verifique seu login.");
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
@@ -76,7 +93,7 @@ export default function Login({ onClose }: LoginProps) {
               ref={emailInputRef}
               placeholder="email@exemplo.com"
               required
-              disabled={loading} // Disable input when loading
+              disabled={loading}
             />
           </div>
           <div>
@@ -88,7 +105,7 @@ export default function Login({ onClose }: LoginProps) {
               type="password"
               ref={passwordInputRef}
               required
-              disabled={loading} // Disable input when loading
+              disabled={loading}
             />
           </div>
           {error && <div className="text-red-500">{error}</div>}
