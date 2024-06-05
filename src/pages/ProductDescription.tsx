@@ -1,9 +1,9 @@
 import { BiCart } from "react-icons/bi";
-import Footer from "../components/Footer";
 import { Button, Carousel as FlowbiteCarousel, Modal, Spinner } from "flowbite-react";
 import StarIcon from "../components/StarIcon";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { getCartItems, addItemToCart } from "../components/apiCart";
 
 interface ProductImage {
   file: File | null;
@@ -21,7 +21,11 @@ interface ProductDTO {
   active: boolean;
 }
 
-export default function ProductDescription() {
+interface ProductDescriptionProps {
+  updateCartItems: (items: CartItem[]) => void;
+}
+
+const ProductDescription: React.FC<ProductDescriptionProps> = ({ updateCartItems }) => {
   const [product, setProduct] = useState<ProductDTO | null>(null);
   const { productId } = useParams<{ productId: string }>();
   const [addingToCart, setAddingToCart] = useState(false);
@@ -64,23 +68,15 @@ export default function ProductDescription() {
   const handleAddToCart = async () => {
     setAddingToCart(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/v1/cart/addItem/${productId}?quantity=1`, {
-        method: "POST",
+      await addItemToCart(Number(productId), 1);
+      setNotificationModal({
+        show: true,
+        title: 'Sucesso',
+        message: 'Produto adicionado ao carrinho com sucesso!',
       });
-
-      if (response.ok) {
-        setNotificationModal({
-          show: true,
-          title: 'Sucesso',
-          message: 'Produto adicionado ao carrinho com sucesso!',
-        });
-      } else {
-        setNotificationModal({
-          show: true,
-          title: 'Erro',
-          message: 'Erro ao adicionar produto ao carrinho. Por favor, tente novamente.',
-        });
-      }
+      // Atualize os itens do carrinho
+      const cartItems = await getCartItems(1); // Assumindo que o ID do carrinho é 1, ajuste conforme necessário
+      updateCartItems(cartItems);
     } catch (error) {
       setNotificationModal({
         show: true,
@@ -164,4 +160,6 @@ export default function ProductDescription() {
       </Modal>
     </div>
   );
-}
+};
+
+export default ProductDescription;

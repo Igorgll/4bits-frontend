@@ -15,7 +15,8 @@ import { Button, Modal } from "flowbite-react";
 import SearchBar from "./SearchBar";
 import ConfirmUpdateUserDialog from "./ConfirmUpdateUserDialog";
 import { IoMdRefresh, IoMdRefreshCircle } from "react-icons/io";
-import { BiRefresh } from "react-icons/bi";
+import { BiPlus, BiRefresh } from "react-icons/bi";
+import { Link } from "react-router-dom";
 
 interface UserDTO {
   userId: number;
@@ -34,13 +35,13 @@ const ListUsers = () => {
   const [filteredUsers, setFilteredUsers] = useState<UserDTO[]>([]); // Estado para armazenar os usuários filtrados
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [userId, setUserId] = useState<number | undefined>(/* valor inicial */);
-  const [newStatus, setNewStatus] = useState<boolean | undefined>(/* valor inicial */);
+  const [newStatus, setNewStatus] = useState<
+    boolean | undefined
+  >(/* valor inicial */);
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:8080/api/v1/users"
-      );
+      const response = await fetch("http://localhost:8080/api/v1/users");
       if (response.ok) {
         const data: any[] = await response.json();
         const convertedData: UserDTO[] = data.map((user) => ({
@@ -50,7 +51,7 @@ const ListUsers = () => {
           cpf: user.cpf,
           group: user.group,
           password: user.password,
-          active: user.active
+          active: user.active,
         }));
         setUsers(convertedData);
       } else {
@@ -63,18 +64,18 @@ const ListUsers = () => {
 
   const handleChangeUserStatus = async (userId: number, active: boolean) => {
     try {
-      if (typeof active !== 'boolean') {
-        console.error('O valor de active não é um booleano');
+      if (typeof active !== "boolean") {
+        console.error("O valor de active não é um booleano");
         return;
       }
-  
+
       const response = await fetch(
         `http://localhost:8080/api/v1/users/isUserActive/${userId}/${!!active}`,
         {
           method: "PATCH",
         }
       );
-        
+
       if (response.ok) {
         const updatedUsers = users.map((user) => {
           if (user.userId === userId) {
@@ -88,7 +89,10 @@ const ListUsers = () => {
         setUsers(updatedUsers); // Atualize o estado localmente
         console.log("User status alterado com sucesso");
       } else {
-        console.error("Falha ao mudar o status do usuário:", response.statusText);
+        console.error(
+          "Falha ao mudar o status do usuário:",
+          response.statusText
+        );
       }
     } catch (error) {
       console.error("Falha ao mudar o status do usuário:", error);
@@ -118,11 +122,11 @@ const ListUsers = () => {
   const handleOpenConfirmDialog = () => {
     setConfirmDialogOpen(true);
   };
-  
+
   const handleCloseConfirmDialog = () => {
     setConfirmDialogOpen(false);
   };
-  
+
   const handleConfirmUpdateUser = async () => {
     handleCloseConfirmDialog(); // Fecha o diálogo de confirmação
     await handleUpdateUser(); // Realiza a atualização do usuário
@@ -209,16 +213,23 @@ const ListUsers = () => {
       user.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredUsers(filtered);
-  };  
+  };
 
   const handleUpdateData = () => {
-      fetchUsers();
-      setFilteredUsers([]);
-  }
+    fetchUsers();
+    setFilteredUsers([]);
+  };
 
   return (
     <Wrapper className="bg-[#111827]">
-      <SearchBar onSearch={handleSearch} />
+      <div className="flex items-center justify-center  gap-6">
+        <SearchBar onSearch={handleSearch} />
+        <Link to="/admin/signup"
+          className="font-medium text-green-450 hover:underline dark:text-green-500"
+        >
+          <BiPlus size={32} />
+        </Link>
+      </div>
       <Table striped>
         <TableHead>
           <TableHeadCell>Nome</TableHeadCell>
@@ -228,91 +239,94 @@ const ListUsers = () => {
           <TableHeadCell>Status</TableHeadCell>
           <TableHeadCell>
             <div className="flex items-center justify-center">
-              <IoMdRefresh size={22} color="white" cursor={"pointer"} onClick={handleUpdateData} />
+              <IoMdRefresh
+                size={22}
+                color="white"
+                cursor={"pointer"}
+                onClick={handleUpdateData}
+              />
             </div>
             <span className="sr-only">Alterar</span>
           </TableHeadCell>
         </TableHead>
         <TableBody className="divide-y">
-          {filteredUsers.length === 0 ? (
-            // Se não houver resultado de pesquisa, renderize todos os usuários
-            users.map((user, index) => (
-              <TableRow
-                key={index}
-                className="bg-white dark:border-gray-700 dark:bg-gray-800"
-              >
-                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                  {user.name}
-                </TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.cpf}</TableCell>
-                <TableCell>{user.group}</TableCell>
-                <TableCell>
-                <a
-                  href="#"
-                  className={`font-medium ${
-                    user.active ? 'text-green-600' : 'text-red-600'
-                  } hover:underline`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const newStatus = !user.active;
-                    handleChangeUserStatus(user.userId, newStatus);
-                  }}
+          {filteredUsers.length === 0
+            ? // Se não houver resultado de pesquisa, renderize todos os usuários
+              users.map((user, index) => (
+                <TableRow
+                  key={index}
+                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
                 >
-                  {user.active ? "Ativo" : "Inativo"}
-                </a>
-                </TableCell>
-                <TableCell>
-                  <a
-                    href="#"
-                    className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
-                    onClick={() => handleOpenModal(user)} // Abrir o modal ao clicar no link "Alterar"
-                  >
-                    Alterar
-                  </a>
-                </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            // Se houver resultados de pesquisa, renderize apenas os usuários filtrados
-            filteredUsers.map((user, index) => (
-              <TableRow
-                key={index}
-                className="bg-white dark:border-gray-700 dark:bg-gray-800"
-              >
-                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                  {user.name}
-                </TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.cpf}</TableCell>
-                <TableCell>{user.group}</TableCell>
-                <TableCell>
-                  <a
-                    href="#"
-                    className={`font-medium ${
-                      user.active ? 'text-green-600' : 'text-red-600'
-                    } hover:underline`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const newStatus = !user.active;
-                      handleChangeUserStatus(user.userId, newStatus);
-                    }}
-                  >
-                    {user.active ? "Ativo" : "Inativo"}
-                  </a>
-                </TableCell>
-                <TableCell>
-                  <a
-                    href="#"
-                    className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
-                    onClick={() => handleOpenModal(user)} // Abrir o modal ao clicar no link "Alterar"
-                  >
-                    Alterar
-                  </a>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
+                  <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                    {user.name}
+                  </TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.cpf}</TableCell>
+                  <TableCell>{user.group}</TableCell>
+                  <TableCell>
+                    <a
+                      href="#"
+                      className={`font-medium ${
+                        user.active ? "text-green-600" : "text-red-600"
+                      } hover:underline`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const newStatus = !user.active;
+                        handleChangeUserStatus(user.userId, newStatus);
+                      }}
+                    >
+                      {user.active ? "Ativo" : "Inativo"}
+                    </a>
+                  </TableCell>
+                  <TableCell>
+                    <a
+                      href="#"
+                      className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                      onClick={() => handleOpenModal(user)} // Abrir o modal ao clicar no link "Alterar"
+                    >
+                      Alterar
+                    </a>
+                  </TableCell>
+                </TableRow>
+              ))
+            : // Se houver resultados de pesquisa, renderize apenas os usuários filtrados
+              filteredUsers.map((user, index) => (
+                <TableRow
+                  key={index}
+                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
+                >
+                  <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                    {user.name}
+                  </TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.cpf}</TableCell>
+                  <TableCell>{user.group}</TableCell>
+                  <TableCell>
+                    <a
+                      href="#"
+                      className={`font-medium ${
+                        user.active ? "text-green-600" : "text-red-600"
+                      } hover:underline`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const newStatus = !user.active;
+                        handleChangeUserStatus(user.userId, newStatus);
+                      }}
+                    >
+                      {user.active ? "Ativo" : "Inativo"}
+                    </a>
+                  </TableCell>
+                  <TableCell>
+                    <a
+                      href="#"
+                      className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                      onClick={() => handleOpenModal(user)} // Abrir o modal ao clicar no link "Alterar"
+                    >
+                      Alterar
+                    </a>
+                  </TableCell>
+                </TableRow>
+              ))}
         </TableBody>
       </Table>
       {selectedUser && ( // Renderizar o modal apenas se houver um usuário selecionado

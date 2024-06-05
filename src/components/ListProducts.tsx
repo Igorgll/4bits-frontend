@@ -347,7 +347,7 @@ const ListProducts = () => {
                   <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                     {product.productName}
                   </TableCell>
-                  <TableCell>{product.price}</TableCell>
+                  <TableCell>R$ {product.price}</TableCell>
                   <TableCell>
                     <p className="line-clamp-2 max-w-96">
                       {product.description}
