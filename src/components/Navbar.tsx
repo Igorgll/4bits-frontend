@@ -5,7 +5,7 @@ import { IoMdClose } from "react-icons/io";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { logoutClient as logoutUserClient } from "./api";
-import { addItemToCart, removeItemFromCart, getCartItems } from "./apiCart";
+import { addItemToCart, removeItemFromCart, getCartItems, increaseItemQuantity, decreaseItemQuantity } from "./apiCart";
 import Login from "./Login";
 import SignUp from "./SignUp";
 
@@ -14,7 +14,7 @@ interface CartItem {
   productName: string;
   price: number;
   quantity: number;
-  image: string; // Adicione esta linha para incluir a imagem
+  image: string;
 }
 
 interface NavbarProps {
@@ -84,6 +84,24 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
     (total, item) => total + item.price * item.quantity,
     0
   );
+
+  const handleIncreaseQuantity = async (productId: number) => {
+    try {
+      await increaseItemQuantity(1, productId); // Supondo que o ID do carrinho é 1, ajuste conforme necessário
+      fetchCartItems();
+    } catch (error) {
+      console.error("Erro ao aumentar a quantidade do item no carrinho:", error);
+    }
+  };
+
+  const handleDecreaseQuantity = async (productId: number) => {
+    try {
+      await decreaseItemQuantity(1, productId); // Supondo que o ID do carrinho é 1, ajuste conforme necessário
+      fetchCartItems();
+    } catch (error) {
+      console.error("Erro ao diminuir a quantidade do item no carrinho:", error);
+    }
+  };
 
   const handleRemoveFromCart = async (productId: number, quantity: number) => {
     try {
@@ -170,7 +188,7 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
           ) : (
             cartItems.map((item) => (
               <div
-                key={`${item.productId}-${item.quantity}`}
+                key={`${item.productId}-${item.quantity}-${Math.random()}`}
                 className="flex mb-4"
               >
                 <div className="flex items-center">
@@ -185,18 +203,23 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
                   <div className="flex flex-row gap-2">
                     <p>Quantidade:</p>
                     <div className="flex flex-row items-center gap-4 ms-2 border border-gray-700 rounded p-[0.5]">
-                      <BiPlus cursor={"pointer"} size={20} />
+                      <BiMinus
+                        cursor={"pointer"}
+                        size={20}
+                        onClick={() => handleDecreaseQuantity(item.productId)}
+                      />
                       <span>{item.quantity}</span>
-                      <BiMinus cursor={"pointer"} size={20} />
+                      <BiPlus
+                        cursor={"pointer"}
+                        size={20}
+                        onClick={() => handleIncreaseQuantity(item.productId)}
+                      />
                     </div>
                   </div>
-                  <p>Preço: R$ {(item.price * item.quantity).toFixed(2)}</p>{" "}
-                  {/* Multiplique o preço pela quantidade */}
+                  <p>Preço: R$ {(item.price * item.quantity).toFixed(2)}</p>
                   <BiTrash
                     cursor={"pointer"}
-                    onClick={() =>
-                      handleRemoveFromCart(item.productId, item.quantity)
-                    }
+                    onClick={() => handleRemoveFromCart(item.productId, item.quantity)}
                     className="text-red-500 absolute top-8 right-0"
                   >
                     Remover
@@ -245,7 +268,7 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
               <span>Valor do frete para CEP: '04812-040' R$ 32,00</span>
             </label>
             <label className="mt-4 gap-2 border border-gray-700 rounded w-full h-32 p-4 flex flex-col">
-            <div className="flex flex-row gap-2 items-center">
+              <div className="flex flex-row gap-2 items-center">
                 <Radio
                   id="frete-padrao"
                   name="frete"
@@ -275,15 +298,6 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
       )}
     </>
   );
-};
-
-const saveCartToLocalStorage = (cartItems: CartItem[]) => {
-  localStorage.setItem("cartItems", JSON.stringify(cartItems));
-};
-
-const loadCartFromLocalStorage = (): CartItem[] => {
-  const savedCart = localStorage.getItem("cartItems");
-  return savedCart ? JSON.parse(savedCart) : [];
 };
 
 const logoutClient = async (): Promise<void> => {
