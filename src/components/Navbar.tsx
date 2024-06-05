@@ -22,7 +22,7 @@ interface NavbarProps {
   updateCartItems: (items: CartItem[]) => void; // Adicione esta linha
 }
 
-const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => { // Adicione `updateCartItems` aqui
+const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
   const location = useLocation();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
@@ -85,10 +85,10 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
     0
   );
 
-  const handleRemoveFromCart = async (productId: number) => {
+  const handleRemoveFromCart = async (productId: number, quantity: number) => {
     try {
-      await removeItemFromCart(1, productId); // Supondo que o ID do carrinho é 1, ajuste conforme necessário
-      fetchCartItems(); // Recarrega os itens do carrinho
+      await removeItemFromCart(1, productId, quantity);
+      fetchCartItems();
     } catch (error) {
       console.error("Erro ao remover item do carrinho:", error);
     }
@@ -158,7 +158,7 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
           showCartDrawer ? "translate-x-0" : "translate-x-full"
         } transition-transform duration-300 ease-in-out z-50`}
       >
-        <div className="p-4 flex justify-between items-center border-b text-white">
+        <div className="p-4 flex justify-between items-center border-b border-gray-700 text-white">
           <h2 className="text-lg font-bold">Carrinho</h2>
           <button onClick={() => setShowCartDrawer(false)}>
             <IoMdClose />
@@ -169,18 +169,18 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
             <p>Seu carrinho está vazio.</p>
           ) : (
             cartItems.map((item) => (
-              <div key={item.productId} className="flex mb-4">
+              <div key={`${item.productId}-${item.quantity}`} className="flex mb-4">
                 <img
                   src={item.image}
                   alt={item.productName}
-                  className="w-16 h-16 object-cover mr-4"
+                  className="w-16 h-16 object-cover rounded mr-4"
                 />
-                <div className="flex flex-col">
-                  <h3>{item.productName}</h3>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold">{item.productName}</h3>
                   <p>Quantidade: {item.quantity}</p>
-                  <p>Preço: R$ {item.price.toFixed(2)}</p>
+                  <p>Preço: R$ {(item.price * item.quantity).toFixed(2)}</p> {/* Multiplique o preço pela quantidade */}
                   <button
-                    onClick={() => handleRemoveFromCart(item.productId)}
+                    onClick={() => handleRemoveFromCart(item.productId, item.quantity)}
                     className="text-red-500"
                   >
                     Remover
