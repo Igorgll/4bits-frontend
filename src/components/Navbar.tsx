@@ -5,8 +5,8 @@ import { IoMdClose } from "react-icons/io";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth, UserRole } from "./AuthContext";
 import { logoutClient as logoutUserClient } from "./api";
-import { addItemToCart, removeItemFromCart, getCartItems, increaseItemQuantity, decreaseItemQuantity } from "./apiCart";
-import { createOrder } from "./apiOrder";
+import { addItemToCart, removeItemFromCart, getCartItems, increaseItemQuantity, decreaseItemQuantity, clearCart } from "./apiCart";
+import { createOrder } from "./apiOrder"; // Importa a função para criar a ordem
 import Login from "./Login";
 import SignUp from "./SignUp";
 
@@ -114,9 +114,48 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
   const handleRemoveFromCart = async (productId: number, quantity: number) => {
     try {
       await removeItemFromCart(1, productId, quantity);
-      fetchCartItems();
+      const updatedCartItems = await getCartItems(1);
+      updateCartItems(updatedCartItems);
+      if (updatedCartItems.length === 0) {
+        await clearCart(1);
+        updateCartItems([]);
+      }
     } catch (error) {
       console.error("Erro ao remover item do carrinho:", error);
+    }
+  };
+
+  const handleClearCart = async () => {
+    try {
+      await clearCart(1); // Supondo que o ID do carrinho é 1, ajuste conforme necessário
+      updateCartItems([]);
+    } catch (error) {
+      console.error("Erro ao limpar o carrinho:", error);
+    }
+  };
+
+  const handleCheckout = async () => {
+    if (!isAuthenticated) {
+      setShowSignUpModal(true);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      localStorage.setItem('freightValue', freteValue.toString());
+      console.log("frete passando do carrinho para orders" + localStorage.getItem("freightValue"))
+      const response = await createOrder(1);
+      if (response.ok) {
+        await clearCart(1); // Limpa o carrinho após criar a ordem
+        updateCartItems([]);
+        setShowCartDrawer(false);
+      } else {
+        console.error("Erro ao criar a ordem:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Erro ao criar a ordem:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -155,28 +194,6 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
         setFreteValue(0);
     }
   };  
-
-  const handleCheckout = async () => {
-    if (!isAuthenticated) {
-      setShowSignUpModal(true);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await createOrder(1);
-      if (response.ok) {
-        updateCartItems([]);
-        setShowCartDrawer(false);
-      } else {
-        console.error("Erro ao criar a ordem:", response.statusText);
-      }
-    } catch (error) {
-      console.error("Erro ao criar a ordem:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <>
@@ -252,7 +269,7 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
           ) : (
             cartItems.map((item) => (
               <div
-                key={`${item.productId}-${item.quantity}-${Math.random()}`}
+                key={`${item.productId}-${Math.random()}`}
                 className="flex mb-4"
               >
                 <div className="flex items-center">
@@ -281,116 +298,117 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
                     </div>
                   </div>
                   <p>Preço: R$ {(item.price * item.quantity).toFixed(2)}</p>
-                    <BiTrash
-                      cursor={"pointer"}
-                      onClick={() => handleRemoveFromCart(item.productId, item.quantity)}
-                      className="text-red-500 absolute top-8 right-0"
-                    >
-                      Remover
-                    </BiTrash>
-                  </div>
+                  <span className="text-red-500 absolute top-0 right-0 cursor-pointer" onClick={handleClearCart} >Limpar Carrinho</span>
+                  <BiTrash
+                    cursor={"pointer"}
+                    onClick={() => handleRemoveFromCart(item.productId, item.quantity)}
+                    className="text-red-500 absolute bottom-0 right-0"
+                  >
+                    Remover
+                  </BiTrash>
                 </div>
-              ))
+              </div>
+            ))
+          )}
+        </div>
+        <div className="flex-1 w-full">
+          <div className="p-4 border-t border-gray-700 text-white">
+            <div className="flex flex-row items-center gap-4 mb-4">
+              <h3 className="font-bold text-lg">Calcular frete:</h3>
+              <TextInput
+                type="text"
+                required
+                sizing={"md"}
+                placeholder="Informe seu CEP"
+                value={cep}
+                onChange={handleCepChange}
+              />
+              <Button onClick={handleCalcularFrete} disabled={isButtonDisabled || loadingFrete}>
+                {loadingFrete ? <Spinner size="sm" light /> : "Calcular"}
+              </Button>
+            </div>
+            {showFreteOptions && (
+              <>
+                <label className="gap-2 border border-gray-700 rounded w-full h-32 p-4 flex flex-col">
+                  <div className="flex flex-row gap-2 items-center">
+                    <Radio
+                      id="frete-padrao"
+                      name="frete"
+                      value="padrao"
+                      onChange={handleFreteChange}
+                    />
+                    <Label>Padrão</Label>
+                  </div>
+                  <p>Entrega padrão: Previsão de entrega 10 a 15 dias.</p>
+                  <span>Valor do frete: <strong>R$ 18,00</strong></span>
+                </label>
+                <label className="mt-4 gap-2 border border-gray-700 rounded w-full h-32 p-4 flex flex-col">
+                  <div className="flex flex-row gap-2 items-center">
+                    <Radio
+                      id="frete-premium"
+                      name="frete"
+                      value="premium"
+                      onChange={handleFreteChange}
+                    />
+                    <Label>Premium</Label>
+                  </div>
+                  <p>Entrega <strong>SEDEX:</strong> Previsão de entrega 6 a 8 dias.</p>
+                  <span>Valor do frete: <strong>R$ 24,00</strong></span>
+                </label>
+                <label className="mt-4 gap-2 border border-gray-700 rounded w-full h-32 p-4 flex flex-col">
+                  <div className="flex flex-row gap-2 items-center">
+                    <Radio
+                      id="frete-fast"
+                      name="frete"
+                      value="fast"
+                      onChange={handleFreteChange}
+                    />
+                    <Label>Fast Delivery</Label>
+                  </div>
+                  <p>Entrega <strong>CORREIOS:</strong> Previsão de entrega 2 a 4 dias.</p>
+                  <span>Valor do frete: <strong>R$ 26,50</strong></span>
+                </label>
+              </>
             )}
           </div>
-          <div className="flex-1 w-full">
-            <div className="p-4 border-t border-gray-700 text-white">
-              <div className="flex flex-row items-center gap-4 mb-4">
-                <h3 className="font-bold text-lg">Calcular frete:</h3>
-                <TextInput
-                  type="text"
-                  required
-                  sizing={"md"}
-                  placeholder="Informe seu CEP"
-                  value={cep}
-                  onChange={handleCepChange}
-                />
-                <Button onClick={handleCalcularFrete} disabled={isButtonDisabled || loadingFrete}>
-                  {loadingFrete ? <Spinner size="sm" light /> : "Calcular"}
-                </Button>
-              </div>
-              {showFreteOptions && (
-                <>
-                  <label className="gap-2 border border-gray-700 rounded w-full h-32 p-4 flex flex-col">
-                    <div className="flex flex-row gap-2 items-center">
-                      <Radio
-                        id="frete-padrao"
-                        name="frete"
-                        value="padrao"
-                        onChange={handleFreteChange}
-                      />
-                      <Label>Padrão</Label>
-                    </div>
-                    <p>Entrega padrão: Previsão de entrega 10 a 15 dias.</p>
-                    <span>Valor do frete: <strong>R$ 18,00</strong></span>
-                  </label>
-                  <label className="mt-4 gap-2 border border-gray-700 rounded w-full h-32 p-4 flex flex-col">
-                    <div className="flex flex-row gap-2 items-center">
-                      <Radio
-                        id="frete-premium"
-                        name="frete"
-                        value="premium"
-                        onChange={handleFreteChange}
-                      />
-                      <Label>Premium</Label>
-                    </div>
-                    <p>Entrega <strong>SEDEX:</strong> Previsão de entrega 6 a 8 dias.</p>
-                    <span>Valor do frete: <strong>R$ 24,00</strong></span>
-                  </label>
-                  <label className="mt-4 gap-2 border border-gray-700 rounded w-full h-32 p-4 flex flex-col">
-                    <div className="flex flex-row gap-2 items-center">
-                      <Radio
-                        id="frete-fast"
-                        name="frete"
-                        value="fast"
-                        onChange={handleFreteChange}
-                      />
-                      <Label>Fast Delivery</Label>
-                    </div>
-                    <p>Entrega <strong>CORREIOS:</strong> Previsão de entrega 2 a 4 dias.</p>
-                    <span>Valor do frete: <strong>R$ 26,50</strong></span>
-                  </label>
-                </>
-              )}
-            </div>
-          </div>
-          <div className="p-4 border-t border-gray-700 text-white">
-            <h3 className="text-lg font-bold">
-              Total: R$ {cartTotal.toFixed(2)}
-            </h3>
-            <Button color={"success"} className="mt-3" disabled={!isFreteSelected} onClick={handleCheckout} >Checkout</Button>
-          </div>
         </div>
-  
-        {showCartDrawer && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-            onClick={() => setShowCartDrawer(false)}
-          ></div>
-        )}
-      </>
-    );
-  };
-  
-  const logoutClient = async (): Promise<void> => {
-    const token = localStorage.getItem("sessionToken");
-    const response = await fetch(
-      "http://localhost:8080/api/v1/users/clientLogout",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Auth-Token": token ? token : "",
-        },
-      }
-    );
-  
-    if (!response.ok) {
-      throw new Error("Failed to logout");
+        <div className="p-4 border-t border-gray-700 text-white">
+          <h3 className="text-lg font-bold">
+            Total: R$ {cartTotal.toFixed(2)}
+          </h3>
+          <Button color={"success"} className="mt-3" disabled={!isFreteSelected} onClick={handleCheckout} >Checkout</Button>
+        </div>
+      </div>
+
+      {showCartDrawer && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setShowCartDrawer(false)}
+        ></div>
+      )}
+    </>
+  );
+};
+
+const logoutClient = async (): Promise<void> => {
+  const token = localStorage.getItem("sessionToken");
+  const response = await fetch(
+    "http://localhost:8080/api/v1/users/clientLogout",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Auth-Token": token ? token : "",
+      },
     }
-  
-    localStorage.removeItem("sessionToken");
-  };
-  
-  export { logoutClient as logoutUserClient };
-  export default Navbar;
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to logout");
+  }
+
+  localStorage.removeItem("sessionToken");
+};
+
+export { logoutClient as logoutUserClient };
+export default Navbar;

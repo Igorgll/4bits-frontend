@@ -18,18 +18,18 @@ export default function ListOrders() {
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      const response = await fetch("http://localhost:8080/api/v1/orders/all");
-      if (response.status === 401) {
-        console.error('Unauthorized access - check your credentials');
-        return;
-      }
-      const data = await response.json();
-      console.log("Fetched orders:", data);
-      setOrders(data);
-    };
+  const fetchOrders = async () => {
+    const response = await fetch("http://localhost:8080/api/v1/orders/all");
+    if (response.status === 401) {
+      console.error('Unauthorized access - check your credentials');
+      return;
+    }
+    const data = await response.json();
+    console.log("Fetched orders:", data);
+    setOrders(data);
+  };
 
+  useEffect(() => {
     fetchOrders();
   }, []);
 
@@ -68,6 +68,12 @@ export default function ListOrders() {
     }
   };
 
+  const calculateTotalWithFreight = (order: any) => {
+    const freightValue = parseFloat(localStorage.getItem('freightValue') || '0');
+    const totalItems = order.items.reduce((total: number, item: any) => total + item.product.price * item.quantity, 0);
+    return (totalItems + freightValue).toFixed(2);
+  };
+
   return (
     <div className="flex justify-center items-center h-screen bg-gray-900">
       <div className="overflow-x-auto">
@@ -80,7 +86,7 @@ export default function ListOrders() {
               <TableHeadCell>Total</TableHeadCell>
               <TableHeadCell>
                 <div className="flex items-center justify-center">
-                  <IoMdRefresh size={22} color="white" cursor={"pointer"} />
+                  <IoMdRefresh size={22} color="white" cursor={"pointer"} onClick={fetchOrders} />
                 </div>
               </TableHeadCell>
               <TableHeadCell></TableHeadCell>
@@ -100,7 +106,7 @@ export default function ListOrders() {
                 <TableCell className="text-center">
                   {order.status}
                 </TableCell>
-                <TableCell className="text-center">{order.totalAmount.toFixed(2)}</TableCell>
+                <TableCell className="text-center">{calculateTotalWithFreight(order)}</TableCell>
                 <TableCell className="text-center">
                   <BsEyeFill color="#cecece" cursor={"pointer"} onClick={() => handleOpenModal(order.orderId)} />
                 </TableCell>

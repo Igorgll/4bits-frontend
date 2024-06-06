@@ -24,6 +24,20 @@ export const removeItemFromCart = async (shoppingCartId: number, productId: numb
   }
 };
 
+export const clearCart = async (shoppingCartId: number): Promise<void> => {
+  const response = await fetch(`http://localhost:8080/api/v1/cart/clearCart/${shoppingCartId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Auth-Token": localStorage.getItem("authToken") || "",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to clear the cart");
+  }
+};
+
 export const getCartItems = async (shoppingCartId: number) => {
   const response = await fetch(`http://localhost:8080/api/v1/cart/viewCart/${shoppingCartId}`);
   if (!response.ok) {
