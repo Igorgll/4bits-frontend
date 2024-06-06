@@ -6,6 +6,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth, UserRole } from "./AuthContext";
 import { logoutClient as logoutUserClient } from "./api";
 import { addItemToCart, removeItemFromCart, getCartItems, increaseItemQuantity, decreaseItemQuantity } from "./apiCart";
+import { createOrder } from "./apiOrder";
 import Login from "./Login";
 import SignUp from "./SignUp";
 
@@ -154,6 +155,28 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
         setFreteValue(0);
     }
   };  
+
+  const handleCheckout = async () => {
+    if (!isAuthenticated) {
+      setShowSignUpModal(true);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await createOrder(1);
+      if (response.ok) {
+        updateCartItems([]);
+        setShowCartDrawer(false);
+      } else {
+        console.error("Erro ao criar a ordem:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Erro ao criar a ordem:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -335,7 +358,7 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
             <h3 className="text-lg font-bold">
               Total: R$ {cartTotal.toFixed(2)}
             </h3>
-            <Button color={"success"} className="mt-3" disabled={!isFreteSelected} onClick={() => setShowSignUpModal(true)} >Checkout</Button>
+            <Button color={"success"} className="mt-3" disabled={!isFreteSelected} onClick={handleCheckout} >Checkout</Button>
           </div>
         </div>
   
