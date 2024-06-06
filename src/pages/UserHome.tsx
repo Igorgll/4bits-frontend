@@ -40,6 +40,7 @@ export default function UserHome() {
   const [openModal, setOpenModal] = useState(false);
   const [openAdressModal, setOpenAdressModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [updatedUser, setUpdatedUser] = useState<User | null>(null);
   const [newAddress, setNewAddress] = useState<Address>({
     cep: "",
     logradouro: "",
@@ -94,6 +95,14 @@ export default function UserHome() {
     }));
   };
 
+  const handleUserInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setUpdatedUser((prevUser) => ({
+      ...prevUser,
+      [id]: value,
+    } as User));
+  };
+
   const handleAddAddress = async () => {
     console.log("handleAddAddress called");
     console.log("newAddress:", newAddress);
@@ -118,6 +127,38 @@ export default function UserHome() {
         }
       } catch (error) {
         console.error("Erro ao adicionar endereço:", error);
+      }
+    } else {
+      console.log("User is not defined");
+    }
+  };
+
+  const handleUpdateUser = async () => {
+    if (user && updatedUser) {
+      try {
+        const response = await fetch(`http://localhost:8080/api/v1/users/updateUser/${user.userId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: updatedUser.name,
+            email: updatedUser.email,
+            cpf: updatedUser.cpf,
+            password: updatedUser.password,
+          }),
+        });
+
+        if (response.ok) {
+          console.log("User updated successfully");
+          const data = await response.json();
+          setUser(data);
+          setOpenModal(false);
+        } else {
+          console.error("Error updating user:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error updating user:", error);
       }
     } else {
       console.log("User is not defined");
@@ -172,36 +213,36 @@ export default function UserHome() {
             </h3>
             <div>
               <div className="mb-2 block">
-                <Label htmlFor="nome" value="Nome" />
+                <Label htmlFor="name" value="Nome" />
               </div>
-              <TextInput id="nome" defaultValue={user?.name} required />
+              <TextInput id="name" defaultValue={user?.name} onChange={handleUserInputChange} required />
             </div>
             <div>
               <div className="mb-2 block">
                 <Label htmlFor="email" value="Email" />
               </div>
-              <TextInput id="email" defaultValue={user?.email} required />
+              <TextInput id="email" defaultValue={user?.email} onChange={handleUserInputChange} required />
             </div>
             <div>
               <div className="mb-2 block">
                 <Label htmlFor="cpf" value="CPF" />
               </div>
-              <TextInput id="cpf" defaultValue={user?.cpf} required />
+              <TextInput id="cpf" defaultValue={user?.cpf} onChange={handleUserInputChange} required />
             </div>
             <div>
               <div className="mb-2 block">
                 <Label htmlFor="password" value="Senha" />
               </div>
-              <TextInput id="password" required type="password" />
+              <TextInput id="password" onChange={handleUserInputChange} required type="password" />
             </div>
             <div>
               <div className="mb-2 block">
                 <Label htmlFor="confirmPassword" value="Confirmar Senha" />
               </div>
-              <TextInput id="confirmPassword" required type="password" />
+              <TextInput id="confirmPassword" onChange={handleUserInputChange} required type="password" />
             </div>
             <div className="w-full flex justify-between">
-              <Button onClick={() => setOpenModal(false)} color="success">
+              <Button onClick={handleUpdateUser} color="success">
                 Alterar
               </Button>
               <Button onClick={() => setOpenModal(false)}>Cancelar</Button>
