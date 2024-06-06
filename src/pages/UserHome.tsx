@@ -40,6 +40,16 @@ export default function UserHome() {
   const [openModal, setOpenModal] = useState(false);
   const [openAdressModal, setOpenAdressModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [newAddress, setNewAddress] = useState<Address>({
+    cep: "",
+    logradouro: "",
+    numero: "",
+    complemento: "",
+    bairro: "",
+    localidade: "",
+    uf: "",
+  });
+
   const { userEmail } = useAuth(); // Obtendo o e-mail do usuário autenticado
 
   useEffect(() => {
@@ -74,6 +84,44 @@ export default function UserHome() {
 
   const handleCloseAdressModal = () => {
     setOpenAdressModal(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { id, value } = e.target;
+    setNewAddress((prevAddress) => ({
+      ...prevAddress,
+      [id]: value,
+    }));
+  };
+
+  const handleAddAddress = async () => {
+    console.log("handleAddAddress called");
+    console.log("newAddress:", newAddress);
+
+    if (user) {
+      try {
+        const response = await fetch(`http://localhost:8080/api/v1/users/${user.userId}/deliveryAddress`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newAddress),
+        });
+
+        if (response.ok) {
+          console.log("Address added successfully");
+          const updatedUser = await response.json(); // Assuming the response returns the updated user data
+          setUser(updatedUser);
+          setOpenAdressModal(false);
+        } else {
+          console.error("Erro ao adicionar endereço:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Erro ao adicionar endereço:", error);
+      }
+    } else {
+      console.log("User is not defined");
+    }
   };
 
   return (
@@ -126,7 +174,7 @@ export default function UserHome() {
               <div className="mb-2 block">
                 <Label htmlFor="nome" value="Nome" />
               </div>
-              <TextInput id="nome" defaultValue={user?.nome} required />
+              <TextInput id="nome" defaultValue={user?.name} required />
             </div>
             <div>
               <div className="mb-2 block">
@@ -174,7 +222,13 @@ export default function UserHome() {
               <div className="mb-2 block">
                 <Label htmlFor="cep" value="CEP" />
               </div>
-              <TextInput className="w-44" id="cep" required />
+              <TextInput
+                className="w-44"
+                id="cep"
+                required
+                onChange={handleInputChange}
+                value={newAddress.cep}
+              />
             </div>
             <div className="flex gap-6">
               <div>
@@ -186,89 +240,99 @@ export default function UserHome() {
                   id="logradouro"
                   type="string"
                   required
+                  onChange={handleInputChange}
+                  value={newAddress.logradouro}
                 />
               </div>
               <div>
                 <div className="mb-2 block">
                   <Label htmlFor="numero" value="Número" />
                 </div>
-                <TextInput id="numero" type="string" required />
-              </div>
-            </div>
-            <div className="flex gap-6">
-              <div>
-                <div className="mb-2 block">
-                  <Label htmlFor="complemento" value="Complemento" />
-                </div>
                 <TextInput
-                  className="w-96"
-                  id="complemento"
-                  type="string"
+                  className="w-24"
+                  id="numero"
                   required
-                />
-              </div>
-              <div>
-                <div className="mb-2 block">
-                  <Label htmlFor="bairro" value="Bairro" />
-                </div>
-                <TextInput
-                  className="w-96"
-                  id="bairro"
-                  type="string"
-                  required
+                  onChange={handleInputChange}
+                  value={newAddress.numero}
                 />
               </div>
             </div>
-            <div className="flex gap-6">
-              <div>
-                <div className="mb-2 block">
-                  <Label htmlFor="localidade" value="Cidade" />
-                </div>
-                <TextInput
-                  className="w-96"
-                  id="localidade"
-                  type="string"
-                  required
-                />
+            <div>
+              <div className="mb-2 block">
+                <Label htmlFor="complemento" value="Complemento" />
               </div>
-              <div>
-                <div className="mb-2 block">
-                  <Label htmlFor="uf" value="UF" />
-                </div>
-                <Select className="w-40" id="uf" required>
-                  <option value="">Selecione uma UF</option>
-                  <option value="AC">Acre</option>
-                  <option value="AL">Alagoas</option>
-                  <option value="AP">Amapá</option>
-                  <option value="AM">Amazonas</option>
-                  <option value="BA">Bahia</option>
-                  <option value="CE">Ceará</option>
-                  <option value="DF">Distrito Federal</option>
-                  <option value="ES">Espírito Santo</option>
-                  <option value="GO">Goiás</option>
-                  <option value="MA">Maranhão</option>
-                  <option value="MT">Mato Grosso</option>
-                  <option value="MS">Mato Grosso do Sul</option>
-                  <option value="MG">Minas Gerais</option>
-                  <option value="PA">Pará</option>
-                  <option value="PB">Paraíba</option>
-                  <option value="PR">Paraná</option>
-                  <option value="PE">Pernambuco</option>
-                  <option value="PI">Piauí</option>
-                  <option value="RJ">Rio de Janeiro</option>
-                  <option value="RN">Rio Grande do Norte</option>
-                  <option value="RS">Rio Grande do Sul</option>
-                  <option value="RO">Rondônia</option>
-                  <option value="RR">Roraima</option>
-                  <option value="SC">Santa Catarina</option>
-                  <option value="SP">São Paulo</option>
-                  <option value="SE">Sergipe</option>
-                  <option value="TO">Tocantins</option>
-                </Select>
+              <TextInput
+                className="w-96"
+                id="complemento"
+                type="string"
+                required
+                onChange={handleInputChange}
+                value={newAddress.complemento}
+              />
+            </div>
+            <div>
+              <div className="mb-2 block">
+                <Label htmlFor="bairro" value="Bairro" />
               </div>
+              <TextInput
+                className="w-72"
+                id="bairro"
+                type="string"
+                required
+                onChange={handleInputChange}
+                value={newAddress.bairro}
+              />
+            </div>
+            <div>
+              <div className="mb-2 block">
+                <Label htmlFor="localidade" value="Localidade" />
+              </div>
+              <TextInput
+                className="w-72"
+                id="localidade"
+                type="string"
+                required
+                onChange={handleInputChange}
+                value={newAddress.localidade}
+              />
+            </div>
+            <div>
+              <div className="mb-2 block">
+                <Label htmlFor="uf" value="UF" />
+              </div>
+              <Select id="uf" required onChange={handleInputChange} value={newAddress.uf}>
+                <option value="">Selecione um estado</option>
+                <option value="AC">AC</option>
+                <option value="AL">AL</option>
+                <option value="AP">AP</option>
+                <option value="AM">AM</option>
+                <option value="BA">BA</option>
+                <option value="CE">CE</option>
+                <option value="DF">DF</option>
+                <option value="ES">ES</option>
+                <option value="GO">GO</option>
+                <option value="MA">MA</option>
+                <option value="MT">MT</option>
+                <option value="MS">MS</option>
+                <option value="MG">MG</option>
+                <option value="PA">PA</option>
+                <option value="PB">PB</option>
+                <option value="PR">PR</option>
+                <option value="PE">PE</option>
+                <option value="PI">PI</option>
+                <option value="RJ">RJ</option>
+                <option value="RN">RN</option>
+                <option value="RS">RS</option>
+                <option value="RO">RO</option>
+                <option value="RR">RR</option>
+                <option value="SC">SC</option>
+                <option value="SP">SP</option>
+                <option value="SE">SE</option>
+                <option value="TO">TO</option>
+              </Select>
             </div>
             <div className="w-full flex justify-between">
-              <Button onClick={() => setOpenAdressModal(false)} color="success">
+              <Button onClick={handleAddAddress} color="success">
                 Adicionar
               </Button>
               <Button onClick={() => setOpenAdressModal(false)}>Cancelar</Button>
