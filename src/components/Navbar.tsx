@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import { Button, Label, Navbar as Nav, Radio, Spinner, TextInput } from "flowbite-react";
 import { BiCart, BiMinus, BiPlus, BiTrash } from "react-icons/bi";
 import { IoMdClose } from "react-icons/io";
 import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "./AuthContext";
+import { useAuth, UserRole } from "./AuthContext";
 import { logoutClient as logoutUserClient } from "./api";
 import { addItemToCart, removeItemFromCart, getCartItems, increaseItemQuantity, decreaseItemQuantity } from "./apiCart";
+import { createOrder } from "./apiOrder";
 import Login from "./Login";
 import SignUp from "./SignUp";
 
@@ -19,7 +20,7 @@ interface CartItem {
 
 interface NavbarProps {
   cartItems: CartItem[];
-  updateCartItems: (items: CartItem[]) => void; // Adicione esta linha
+  updateCartItems: (items: CartItem[]) => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
@@ -28,6 +29,13 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showCartDrawer, setShowCartDrawer] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [cep, setCep] = useState<string>("");
+  const [isButtonDisabled, setIsButtonDisabled] = useState<boolean>(true);
+  const [showFreteOptions, setShowFreteOptions] = useState<boolean>(false);
+  const [selectedFrete, setSelectedFrete] = useState<string>("padrao");
+  const [freteValue, setFreteValue] = useState<number>(0);
+  const [loadingFrete, setLoadingFrete] = useState<boolean>(false);
+  const [isFreteSelected, setIsFreteSelected] = useState<boolean>(false);
   const {
     isAuthenticated,
     userEmail,
@@ -83,7 +91,7 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
   const cartTotal = (cartItems || []).reduce(
     (total, item) => total + item.price * item.quantity,
     0
-  );
+  ) + freteValue;
 
   const handleIncreaseQuantity = async (productId: number) => {
     try {
@@ -113,6 +121,62 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
   };
 
   const hideNavbarItems = location.pathname === "/admin/login";
+
+  const handleCepChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setCep(value);
+    setIsButtonDisabled(value.trim() === ""); // Desabilita o botão se o campo estiver vazio
+  };
+
+  const handleCalcularFrete = () => {
+    setLoadingFrete(true);
+    setTimeout(() => {
+      setLoadingFrete(false);
+      setShowFreteOptions(true);
+    }, 1000);
+  };
+
+  const handleFreteChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setSelectedFrete(value);
+    setIsFreteSelected(true);
+
+    switch(value) {
+      case "padrao":
+        setFreteValue(18.00);
+        break;
+      case "premium":
+        setFreteValue(24.00);
+        break;
+      case "fast":
+        setFreteValue(26.50);
+        break;
+      default:
+        setFreteValue(0);
+    }
+  };  
+
+  const handleCheckout = async () => {
+    if (!isAuthenticated) {
+      setShowSignUpModal(true);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await createOrder(1);
+      if (response.ok) {
+        updateCartItems([]);
+        setShowCartDrawer(false);
+      } else {
+        console.error("Erro ao criar a ordem:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Erro ao criar a ordem:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -217,108 +281,116 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
                     </div>
                   </div>
                   <p>Preço: R$ {(item.price * item.quantity).toFixed(2)}</p>
-                  <BiTrash
-                    cursor={"pointer"}
-                    onClick={() => handleRemoveFromCart(item.productId, item.quantity)}
-                    className="text-red-500 absolute top-8 right-0"
-                  >
-                    Remover
-                  </BiTrash>
+                    <BiTrash
+                      cursor={"pointer"}
+                      onClick={() => handleRemoveFromCart(item.productId, item.quantity)}
+                      className="text-red-500 absolute top-8 right-0"
+                    >
+                      Remover
+                    </BiTrash>
+                  </div>
                 </div>
+              ))
+            )}
+          </div>
+          <div className="flex-1 w-full">
+            <div className="p-4 border-t border-gray-700 text-white">
+              <div className="flex flex-row items-center gap-4 mb-4">
+                <h3 className="font-bold text-lg">Calcular frete:</h3>
+                <TextInput
+                  type="text"
+                  required
+                  sizing={"md"}
+                  placeholder="Informe seu CEP"
+                  value={cep}
+                  onChange={handleCepChange}
+                />
+                <Button onClick={handleCalcularFrete} disabled={isButtonDisabled || loadingFrete}>
+                  {loadingFrete ? <Spinner size="sm" light /> : "Calcular"}
+                </Button>
               </div>
-            ))
-          )}
-        </div>
-        <div className="flex-1 w-full">
-          <div className="p-4 border-t border-gray-700 text-white">
-            <div className="flex flex-row items-center gap-4 mb-4">
-              <h3 className="font-bold text-lg">Calcular frete:</h3>
-              <TextInput
-                type="zipcode"
-                required
-                sizing={"md"}
-                placeholder="Informe seu CEP"
-              />
-              <Button>Calcular</Button>
+              {showFreteOptions && (
+                <>
+                  <label className="gap-2 border border-gray-700 rounded w-full h-32 p-4 flex flex-col">
+                    <div className="flex flex-row gap-2 items-center">
+                      <Radio
+                        id="frete-padrao"
+                        name="frete"
+                        value="padrao"
+                        onChange={handleFreteChange}
+                      />
+                      <Label>Padrão</Label>
+                    </div>
+                    <p>Entrega padrão: Previsão de entrega 10 a 15 dias.</p>
+                    <span>Valor do frete: <strong>R$ 18,00</strong></span>
+                  </label>
+                  <label className="mt-4 gap-2 border border-gray-700 rounded w-full h-32 p-4 flex flex-col">
+                    <div className="flex flex-row gap-2 items-center">
+                      <Radio
+                        id="frete-premium"
+                        name="frete"
+                        value="premium"
+                        onChange={handleFreteChange}
+                      />
+                      <Label>Premium</Label>
+                    </div>
+                    <p>Entrega <strong>SEDEX:</strong> Previsão de entrega 6 a 8 dias.</p>
+                    <span>Valor do frete: <strong>R$ 24,00</strong></span>
+                  </label>
+                  <label className="mt-4 gap-2 border border-gray-700 rounded w-full h-32 p-4 flex flex-col">
+                    <div className="flex flex-row gap-2 items-center">
+                      <Radio
+                        id="frete-fast"
+                        name="frete"
+                        value="fast"
+                        onChange={handleFreteChange}
+                      />
+                      <Label>Fast Delivery</Label>
+                    </div>
+                    <p>Entrega <strong>CORREIOS:</strong> Previsão de entrega 2 a 4 dias.</p>
+                    <span>Valor do frete: <strong>R$ 26,50</strong></span>
+                  </label>
+                </>
+              )}
             </div>
-            <label className="gap-2 border border-gray-700 rounded w-full h-32 p-4 flex flex-col">
-              <div className="flex flex-row gap-2 items-center">
-                <Radio
-                  id="frete-padrao"
-                  name="frete"
-                  value="padrao"
-                  defaultChecked
-                />
-                <Label>Padrão</Label>
-              </div>
-              <p>Entrega padrão: Previsão de entrega 10 a 15 dias.</p>
-              <span>Valor do frete para CEP: '04812-040' R$ 22,50</span>
-            </label>
-            <label className="mt-4 gap-2 border border-gray-700 rounded w-full h-32 p-4 flex flex-col">
-              <div className="flex flex-row gap-2 items-center">
-                <Radio
-                  id="frete-padrao"
-                  name="frete"
-                  value="padrao"
-                  defaultChecked
-                />
-                <Label>Premium</Label>
-              </div>
-              <p>Entrega <strong>SEDEX:</strong> Previsão de entrega 6 a 8 dias.</p>
-              <span>Valor do frete para CEP: '04812-040' R$ 32,00</span>
-            </label>
-            <label className="mt-4 gap-2 border border-gray-700 rounded w-full h-32 p-4 flex flex-col">
-              <div className="flex flex-row gap-2 items-center">
-                <Radio
-                  id="frete-padrao"
-                  name="frete"
-                  value="padrao"
-                  defaultChecked
-                />
-                <Label>Fast Delivery</Label>
-              </div>
-              <p>Entrega <strong>CORREIOS:</strong> Previsão de entrega 2 a 4 dias.</p>
-              <span>Valor do frete para CEP: '04812-040' R$ 66,00</span>
-            </label>
+          </div>
+          <div className="p-4 border-t border-gray-700 text-white">
+            <h3 className="text-lg font-bold">
+              Total: R$ {cartTotal.toFixed(2)}
+            </h3>
+            <Button color={"success"} className="mt-3" disabled={!isFreteSelected} onClick={handleCheckout} >Checkout</Button>
           </div>
         </div>
-        <div className="p-4 border-t border-gray-700 text-white">
-          <h3 className="text-lg font-bold">
-            Total: R$ {cartTotal.toFixed(2)}
-          </h3>
-          <Button color={"success"} className="mt-3">Checkout</Button>
-        </div>
-      </div>
-
-      {showCartDrawer && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setShowCartDrawer(false)}
-        ></div>
-      )}
-    </>
-  );
-};
-
-const logoutClient = async (): Promise<void> => {
-  const token = localStorage.getItem("sessionToken");
-  const response = await fetch(
-    "http://localhost:8080/api/v1/users/clientLogout",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Auth-Token": token ? token : "",
-      },
+  
+        {showCartDrawer && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={() => setShowCartDrawer(false)}
+          ></div>
+        )}
+      </>
+    );
+  };
+  
+  const logoutClient = async (): Promise<void> => {
+    const token = localStorage.getItem("sessionToken");
+    const response = await fetch(
+      "http://localhost:8080/api/v1/users/clientLogout",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Auth-Token": token ? token : "",
+        },
+      }
+    );
+  
+    if (!response.ok) {
+      throw new Error("Failed to logout");
     }
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to logout");
-  }
-
-  localStorage.removeItem("sessionToken");
-};
-
-export { logoutClient as logoutUserClient };
-export default Navbar;
+  
+    localStorage.removeItem("sessionToken");
+  };
+  
+  export { logoutClient as logoutUserClient };
+  export default Navbar;

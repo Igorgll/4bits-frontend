@@ -6,7 +6,7 @@ interface SignUpProps {
 }
 
 export default function SignUp({ onClose }: SignUpProps) {
-  const [nome, setNome] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [cpf, setCpf] = useState('');
   const [password, setPassword] = useState('');
@@ -90,10 +90,11 @@ export default function SignUp({ onClose }: SignUpProps) {
     }
 
     const user = {
-      nome,
+      name,
       email,
       cpf,
       password,
+      group: "ROLE_USER",
       billingAddress: {
         cep,
         logradouro: street,
@@ -171,8 +172,8 @@ export default function SignUp({ onClose }: SignUpProps) {
                     className="w-96"
                     id="name"
                     required
-                    value={nome}
-                    onChange={(e) => setNome(e.target.value)}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                   />
                 </div>
                 <div>
