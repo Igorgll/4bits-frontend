@@ -142,7 +142,9 @@ const Navbar: React.FC<NavbarProps> = ({ cartItems = [], updateCartItems }) => {
 
     try {
       setLoading(true);
-      const response = await createOrder(1); // Supondo que o ID do carrinho é 1, ajuste conforme necessário
+      localStorage.setItem('freightValue', freteValue.toString());
+      console.log("frete passando do carrinho para orders" + localStorage.getItem("freightValue"))
+      const response = await createOrder(1);
       if (response.ok) {
         await clearCart(1); // Limpa o carrinho após criar a ordem
         updateCartItems([]);
