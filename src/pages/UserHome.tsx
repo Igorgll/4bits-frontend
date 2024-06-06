@@ -7,11 +7,20 @@ import {
   Tabs,
   TabsRef,
   TextInput,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeadCell,
+  TableRow,
 } from "flowbite-react";
 import Footer from "../components/Footer";
 import { useRef, useState, useEffect } from "react";
-import { BiUserCircle } from "react-icons/bi";
+import { BiShoppingBag, BiUserCircle } from "react-icons/bi";
 import { useAuth } from "../components/AuthContext";
+import { IoMdRefresh } from "react-icons/io";
+import { BsEyeFill } from "react-icons/bs";
+import OrderPreviewWindow from "../components/OrderPreviewWindow";
 
 interface User {
   userId: number;
@@ -70,14 +79,6 @@ export default function UserHome() {
 
     fetchUserData();
   }, [userEmail]);
-
-  const handleOpenModal = () => {
-    setOpenModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setOpenModal(false);
-  };
 
   const handleAdressOpenModal = () => {
     setOpenAdressModal(true);
@@ -165,6 +166,49 @@ export default function UserHome() {
     }
   };
 
+  const [orders, setOrders] = useState<any[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+
+  const fetchOrders = async () => {
+    if (user) {
+      const response = await fetch(`http://localhost:8080/api/v1/orders/userId/${user.userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        // Check if the data is an array; if not, wrap it in an array
+        if (Array.isArray(data)) {
+          setOrders(data);
+        } else if (data !== null && typeof data === 'object') {
+          setOrders([data]);
+        } else {
+          console.error("Unexpected response format:", data);
+        }
+      } else {
+        console.error("Erro ao buscar pedidos:", response.status);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, [user]);
+
+  const handleOpenModal = (orderId: number) => {
+    setSelectedOrderId(orderId);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedOrderId(null);
+  };
+
+  const calculateTotalWithFreight = (order: any) => {
+    const freightValue = parseFloat(localStorage.getItem('freightValue') || '0');
+    const totalItems = order.items.reduce((total: number, item: any) => total + item.product.price * item.quantity, 0);
+    return (totalItems + freightValue).toFixed(2);
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <div className="min-h-screen py-6 px-6 bg-[#111827]">
@@ -180,7 +224,7 @@ export default function UserHome() {
                 <List.Item>Email: {user?.email}</List.Item>
                 <List.Item>CPF: {user?.cpf}</List.Item>
               </List>
-              <Button onClick={handleOpenModal} color="info">
+              <Button onClick={() => setOpenModal(true)} color="info">
                 Alterar
               </Button>
             </Tabs.Item>
@@ -198,13 +242,61 @@ export default function UserHome() {
                 Adicionar novo endereço
               </Button>
             </Tabs.Item>
+            <Tabs.Item title="Meus pedidos" icon={BiShoppingBag}>
+              <div className="overflow-x-auto">
+                <Table striped>
+                  <TableHead>
+                      <TableHeadCell>Usuário</TableHeadCell>
+                      <TableHeadCell>Data do Pedido</TableHeadCell>
+                      <TableHeadCell>Produtos</TableHeadCell>
+                      <TableHeadCell className="text-center">Status</TableHeadCell>
+                      <TableHeadCell className="text-center">Total</TableHeadCell>
+                      <TableHeadCell>
+                        <div className="flex items-center justify-center">
+                          <IoMdRefresh size={22} color="white" cursor={"pointer"} onClick={fetchOrders} />
+                        </div>
+                      </TableHeadCell>
+                      <TableHeadCell></TableHeadCell>
+                  </TableHead>
+                  <TableBody className="divide-y">
+                    {orders.map((order) => (
+                      <TableRow key={order.orderId} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                          {order.user.name}
+                        </TableCell>
+                        <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <p className="line-clamp-2 max-w-96">
+                            {order.items.map((item: any) => item.product.productName).join(", ")}
+                          </p>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {order.status}
+                        </TableCell>
+                        <TableCell className="text-center">{calculateTotalWithFreight(order)}</TableCell>
+                        <TableCell>
+                        </TableCell>
+                        <TableCell></TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {showModal && selectedOrderId && (
+                  <OrderPreviewWindow
+                    showModal={showModal}
+                    handleClose={handleCloseModal}
+                    orderId={selectedOrderId}
+                  />
+                )}
+              </div>
+            </Tabs.Item>
           </Tabs>
         </div>
       </div>
       <Footer />
 
       {/* MODAL DE ALTERAR USUÁRIO */}
-      <Modal show={openModal} onClose={handleCloseModal}>
+      <Modal show={openModal} onClose={() => setOpenModal(false)}>
         <Modal.Header />
         <Modal.Body>
           <div className="space-y-6">
